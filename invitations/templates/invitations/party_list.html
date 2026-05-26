@@ -1,0 +1,25 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Your parties{% endblock %}
+
+{% block content %}
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Your parties</h1>
+    <a class="btn" href="{% url 'party_create' %}">+ New party</a>
+  </div>
+
+  {% if parties %}
+    {% for party in parties %}
+      <div class="card">
+        <h2><a href="{% url 'party_detail' party.id %}" style="color:inherit; text-decoration:none">{{ party.name }}</a></h2>
+        <p class="meta">{{ party.starts_at|date:"l, F j, Y · g:i A" }} · {{ party.location }}</p>
+        {% if party.description %}<p>{{ party.description|truncatewords:30 }}</p>{% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="card">
+      <p class="meta">You haven't created any parties yet.</p>
+      <a class="btn" href="{% url 'party_create' %}">Create your first party</a>
+    </div>
+  {% endif %}
+{% endblock %}

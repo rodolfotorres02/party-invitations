@@ -1,0 +1,14 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+  <h1>Log in</h1>
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn">Log in</button>
+    </form>
+  </div>
+{% endblock %}

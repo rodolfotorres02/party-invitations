@@ -1,0 +1,81 @@
+{% comment %}
+Shared <head> setup for all three theme templates.
+
+Loads Tailwind via CDN with a single `tailwind.config` that:
+  - keeps the full Ethereal Union tonal scale (for surface-container-low,
+    on-primary, etc.) intact, so derived shades still render correctly
+  - overrides the four user-driven slots (primary, secondary, surface,
+    on-surface / background / on-background) with the party's palette
+  - also exposes the 4 user colors as CSS variables so non-Tailwind CSS
+    can use them
+{% endcomment %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ party.name }} — Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+<style>
+  :root {
+    --pal-primary: {{ palette.primary_color }};
+    --pal-secondary: {{ palette.secondary_color }};
+    --pal-surface: {{ palette.surface_color }};
+    --pal-text: {{ palette.text_color }};
+  }
+  body { font-family: 'DM Sans', sans-serif; }
+  .font-display { font-family: 'Playfair Display', serif; }
+</style>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ["Playfair Display", "serif"],
+          body: ["DM Sans", "sans-serif"],
+        },
+        colors: {
+          // User-overridable slots (driven by the party's palette).
+          "primary": "{{ palette.primary_color }}",
+          "on-primary": "#ffffff",
+          "secondary": "{{ palette.secondary_color }}",
+          "on-secondary": "#ffffff",
+          "surface": "{{ palette.surface_color }}",
+          "background": "{{ palette.surface_color }}",
+          "on-surface": "{{ palette.text_color }}",
+          "on-background": "{{ palette.text_color }}",
+          // Derived/tonal slots from Ethereal Union — left fixed so derived
+          // surfaces still feel cohesive regardless of the user's choices.
+          "surface-container-lowest": "#ffffff",
+          "surface-container-low": "#fbf2ed",
+          "surface-container": "#f5ece7",
+          "surface-container-high": "#efe6e2",
+          "surface-container-highest": "#e9e1dc",
+          "surface-dim": "#e1d8d4",
+          "surface-bright": "#fff8f5",
+          "surface-variant": "#e9e1dc",
+          "on-surface-variant": "#444841",
+          "outline": "#747870",
+          "outline-variant": "#c4c8bf",
+          "primary-container": "#677a61",
+          "on-primary-container": "#f7fff0",
+          "secondary-container": "#fed65b",
+          "on-secondary-container": "#745c00",
+          "tertiary": "#5c5c58",
+          "on-tertiary": "#ffffff",
+        },
+        spacing: {
+          "section-gap": "120px",
+          "margin-desktop": "80px",
+          "margin-mobile": "24px",
+          "gutter": "32px",
+        },
+        maxWidth: {
+          "container-max": "1140px",
+        },
+      },
+    },
+  };
+</script>

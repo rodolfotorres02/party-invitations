@@ -1,0 +1,72 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}{{ party.name }}{% endblock %}
+
+{% block content %}
+  <div style="display:flex; justify-content:space-between; align-items:start;">
+    <div>
+      <h1>{{ party.name }}</h1>
+      <p class="meta">{{ party.starts_at|date:"l, F j, Y · g:i A" }} · {{ party.location }}</p>
+      <p class="meta">Template: <strong>{{ theme.display_name }}</strong>{% if party.palette %} · Palette: <strong>{{ party.palette.name }}</strong>{% endif %}</p>
+    </div>
+    <div>
+      <a class="btn btn-secondary" href="{% url 'party_edit' party.id %}">Edit</a>
+      <a class="btn btn-secondary" href="{% url 'party_extras' party.id %}">Customize template</a>
+      <form action="{% url 'party_delete' party.id %}" method="post" style="display:inline" onsubmit="return confirm('Delete this party?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  {% if party.description %}
+    <div class="card"><p>{{ party.description|linebreaksbr }}</p></div>
+  {% endif %}
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2>Invitation links</h2>
+      <a class="btn" href="{% url 'invitation_create' party.id %}">+ Create Link</a>
+    </div>
+
+    {% if invitations %}
+      <table>
+        <thead>
+          <tr>
+            <th>Recipient</th>
+            <th>Guests</th>
+            <th>RSVP</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for invitation in invitations %}
+            <tr>
+              <td><strong>{{ invitation.label }}</strong></td>
+              <td>{{ invitation.num_guests }}</td>
+              <td>
+                {% if invitation.rsvp %}
+                  {{ invitation.rsvp.get_status_display }}
+                  <span class="meta">· {{ invitation.rsvp.responded_at|date:"M j" }}</span>
+                {% else %}
+                  <span class="meta">No response</span>
+                {% endif %}
+              </td>
+              <td><span class="meta">{{ invitation.created_at|date:"M j, Y" }}</span></td>
+              <td>
+                <a class="btn btn-secondary" href="{% url 'invitation_link' party.id invitation.id %}">View link</a>
+                <form action="{% url 'invitation_revoke' party.id invitation.id %}" method="post" style="display:inline" onsubmit="return confirm('Revoke this invitation?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-secondary">Revoke</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="meta">No invitation links yet.</p>
+    {% endif %}
+  </div>
+{% endblock %}

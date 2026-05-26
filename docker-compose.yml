@@ -1,0 +1,40 @@
+# Dev-oriented stack: Postgres + Django with hot-reload via bind mount.
+# For production, build the image with `docker build` and run it without
+# this compose file (so the bind mount + runserver override don't apply).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: party_invitations
+    ports:
+      # Host port 5433 avoids colliding with a local Postgres on 5432.
+      # Inside the compose network the web container still uses port 5432.
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d party_invitations"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      DJANGO_SECRET_KEY: dev-insecure-key-change-me
+      DJANGO_DEBUG: "True"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+      DATABASE_URL: postgres://postgres:postgres@db:5432/party_invitations
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,0 +1,177 @@
+"""Form definitions for the invitations app."""
+from __future__ import annotations
+
+from typing import Any, Iterable, Sequence
+
+from django import forms
+from django.contrib.auth.models import AbstractBaseUser
+
+from invitations.models import RSVP, Palette, Party
+from invitations.themes import all_themes, get_theme
+
+
+# --- Field catalog for the wizard's extras step -----------------------------
+#
+# Maps the Party model's theme content fields to their form-field constructors.
+# Each entry is "field_name → callable producing a forms.Field". The extras
+# form picks a subset based on the selected theme's `content_fields`.
+
+_EXTRAS_FIELD_CATALOG: dict[str, Any] = {
+    "hero_subtitle": lambda: forms.CharField(
+        max_length=300,
+        required=False,
+        label="Hero subtitle",
+        help_text="Italic intro line under the hero title.",
+    ),
+    "rsvp_deadline": lambda: forms.DateField(
+        required=False,
+        label="RSVP deadline",
+        widget=forms.DateInput(attrs={"type": "date"}),
+    ),
+    "details_body": lambda: forms.CharField(
+        required=False,
+        label="Details body",
+        widget=forms.Textarea(attrs={"rows": 5}),
+        help_text="The single block of details copy for this template.",
+    ),
+    "our_story": lambda: forms.CharField(
+        required=False,
+        label="Our Story",
+        widget=forms.Textarea(attrs={"rows": 6}),
+    ),
+    "ceremony_time": lambda: forms.CharField(
+        max_length=200, required=False, label="Ceremony time"
+    ),
+    "ceremony_venue": lambda: forms.CharField(
+        max_length=200, required=False, label="Ceremony venue"
+    ),
+    "ceremony_address": lambda: forms.CharField(
+        max_length=300, required=False, label="Ceremony address"
+    ),
+    "reception_time": lambda: forms.CharField(
+        max_length=200, required=False, label="Reception time"
+    ),
+    "reception_venue": lambda: forms.CharField(
+        max_length=200, required=False, label="Reception venue"
+    ),
+    "reception_address": lambda: forms.CharField(
+        max_length=300, required=False, label="Reception address"
+    ),
+    "lodging_info": lambda: forms.CharField(
+        required=False,
+        label="Lodging info",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="Hotel block, recommended accommodations, etc.",
+    ),
+}
+
+
+def _palette_choices(host: AbstractBaseUser) -> Sequence[tuple[str, str]]:
+    return [(str(p.pk), p.name) for p in Palette.objects.filter(host_id=host.pk)]
+
+
+class PartyForm(forms.Form):
+    """Step 1 of the create/edit wizard: basics + template + palette."""
+
+    name = forms.CharField(
+        max_length=200,
+        label="Hero title",
+        help_text="Displayed prominently on the invitation, e.g. 'Evelyn & James'.",
+    )
+    location = forms.CharField(max_length=300)
+    starts_at = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"],
+    )
+    description = forms.CharField(widget=forms.Textarea, required=False)
+    template_choice = forms.ChoiceField(
+        choices=Party.TemplateChoice.choices,
+        label="Invitation template",
+        widget=forms.RadioSelect,
+        initial=Party.TemplateChoice.MINIMAL.value,
+    )
+    palette = forms.ChoiceField(
+        choices=(), label="Color palette", required=True
+    )
+
+    def __init__(self, *args: Any, host: AbstractBaseUser, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["palette"].choices = _palette_choices(host)
+
+
+class PartyExtrasForm(forms.Form):
+    """Step 2 of the wizard: theme-specific content fields.
+
+    Built dynamically from the chosen theme's `content_fields` list.
+    """
+
+    def __init__(
+        self,
+        *args: Any,
+        template_slug: str,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self._field_names: list[str] = []
+        for field_name in get_theme(template_slug).content_fields:
+            factory = _EXTRAS_FIELD_CATALOG.get(field_name)
+            if factory is None:
+                continue
+            self.fields[field_name] = factory()
+            self._field_names.append(field_name)
+
+    @property
+    def field_names(self) -> Iterable[str]:
+        return iter(self._field_names)
+
+
+class PaletteForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    primary_color = forms.CharField(
+        label="Primary (accents, buttons)",
+        widget=forms.TextInput(attrs={"type": "color"}),
+        initial=Palette.DEFAULT_PRIMARY,
+    )
+    secondary_color = forms.CharField(
+        label="Secondary (highlights, CTAs)",
+        widget=forms.TextInput(attrs={"type": "color"}),
+        initial=Palette.DEFAULT_SECONDARY,
+    )
+    surface_color = forms.CharField(
+        label="Surface (background)",
+        widget=forms.TextInput(attrs={"type": "color"}),
+        initial=Palette.DEFAULT_SURFACE,
+    )
+    text_color = forms.CharField(
+        label="Text (body copy)",
+        widget=forms.TextInput(attrs={"type": "color"}),
+        initial=Palette.DEFAULT_TEXT,
+    )
+
+
+class InvitationForm(forms.Form):
+    label = forms.CharField(
+        max_length=200,
+        label="Recipient label",
+        help_text="A name to recognize the recipient(s), e.g. 'The Smiths'.",
+    )
+    num_guests = forms.IntegerField(
+        min_value=1,
+        initial=1,
+        label="Number of guests",
+        help_text="How many people this link is good for.",
+    )
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3}),
+        required=False,
+        label="Personal message (optional)",
+    )
+
+
+class RSVPForm(forms.Form):
+    status = forms.ChoiceField(choices=RSVP.Status.choices, label="Will you attend?")
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3}),
+        required=False,
+        label="Message for the host",
+    )

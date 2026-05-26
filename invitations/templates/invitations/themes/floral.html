@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  {% include "invitations/themes/_theme_head.html" %}
+</head>
+<body class="bg-surface text-on-surface antialiased">
+
+  <header class="px-margin-mobile md:px-margin-desktop py-6 flex items-center justify-between">
+    <span class="font-display text-lg">{{ party.name }}</span>
+    <nav class="hidden md:flex gap-6 uppercase text-xs tracking-widest text-on-surface-variant">
+      <a href="#our-story" class="hover:text-primary">Our Story</a>
+      <a href="#details" class="hover:text-primary">Details</a>
+      <a href="#rsvp" class="hover:text-primary">Kindly Reply</a>
+    </nav>
+  </header>
+
+  {# --- Hero (floral) ------------------------------------------------- #}
+  <section class="relative w-full py-section-gap text-center px-margin-mobile">
+    <div class="absolute inset-x-0 top-12 flex justify-center text-primary opacity-30 text-9xl">
+      <span class="material-symbols-outlined" style="font-size: 280px;">local_florist</span>
+    </div>
+    <div class="relative max-w-container-max mx-auto pt-20">
+      <h1 class="font-display italic text-5xl md:text-7xl text-on-surface">{{ party.name }}</h1>
+      <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant mt-8">{{ party.starts_at|date:"l, F j, Y" }}</p>
+      {% if party.hero_subtitle %}
+        <p class="text-on-surface-variant italic mt-4 max-w-md mx-auto">{{ party.hero_subtitle }}</p>
+      {% endif %}
+    </div>
+  </section>
+
+  {# --- Our Story ---------------------------------------------------- #}
+  {% if party.our_story %}
+    <section id="our-story" class="py-section-gap px-margin-mobile md:px-margin-desktop bg-background">
+      <div class="max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div class="aspect-[4/3] bg-primary/30 rounded flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-7xl">photo_camera</span>
+        </div>
+        <div>
+          <h2 class="font-display text-4xl mb-6">Our Story</h2>
+          <p class="text-on-surface-variant leading-relaxed">{{ party.our_story|linebreaksbr }}</p>
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {# --- The Details (3 cards) --------------------------------------- #}
+  <section id="details" class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-container">
+    <div class="text-center mb-16">
+      <h2 class="font-display text-4xl mb-3">The Details</h2>
+      <p class="uppercase text-xs tracking-widest text-on-surface-variant">{{ party.starts_at|date:"l, F j, Y" }}</p>
+    </div>
+
+    <div class="max-w-container-max mx-auto grid md:grid-cols-3 gap-6">
+      {# Ceremony card #}
+      <div class="bg-surface p-8 rounded text-center border border-outline-variant/30">
+        <span class="material-symbols-outlined text-primary text-4xl mb-3">favorite</span>
+        <h3 class="font-display text-2xl mb-3">Ceremony</h3>
+        {% if party.ceremony_time %}<p class="text-on-surface-variant text-sm">{{ party.ceremony_time }}</p>{% endif %}
+        {% if party.ceremony_venue %}<p class="font-display text-lg mt-2">{{ party.ceremony_venue }}</p>{% endif %}
+        {% if party.ceremony_address %}<p class="text-on-surface-variant text-sm mt-1">{{ party.ceremony_address }}</p>{% endif %}
+      </div>
+      {# Reception card #}
+      <div class="bg-surface p-8 rounded text-center border border-outline-variant/30">
+        <span class="material-symbols-outlined text-primary text-4xl mb-3">restaurant</span>
+        <h3 class="font-display text-2xl mb-3">Reception</h3>
+        {% if party.reception_time %}<p class="text-on-surface-variant text-sm">{{ party.reception_time }}</p>{% endif %}
+        {% if party.reception_venue %}<p class="font-display text-lg mt-2">{{ party.reception_venue }}</p>{% endif %}
+        {% if party.reception_address %}<p class="text-on-surface-variant text-sm mt-1">{{ party.reception_address }}</p>{% endif %}
+      </div>
+      {# Lodging card #}
+      <div class="bg-surface p-8 rounded text-center border border-outline-variant/30">
+        <span class="material-symbols-outlined text-primary text-4xl mb-3">hotel</span>
+        <h3 class="font-display text-2xl mb-3">Lodging</h3>
+        {% if party.lodging_info %}
+          <p class="text-on-surface-variant text-sm leading-relaxed">{{ party.lodging_info|linebreaksbr }}</p>
+        {% else %}
+          <p class="text-on-surface-variant text-sm italic">Details coming soon.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {# --- Kindly Reply -------------------------------------------------- #}
+  <section id="rsvp" class="py-section-gap px-margin-mobile md:px-margin-desktop">
+    <h2 class="font-display text-4xl text-center mb-2">Kindly Reply</h2>
+    <p class="text-center text-on-surface-variant text-sm mb-12 uppercase tracking-widest">
+      We can't wait to celebrate with you
+    </p>
+    {% include "invitations/themes/_rsvp_form.html" %}
+  </section>
+
+  <footer class="w-full py-12 bg-surface-container-low text-center border-t border-outline-variant/20">
+    <span class="font-display italic text-2xl">{{ party.name }}</span>
+    <p class="uppercase text-xs tracking-widest text-on-surface-variant mt-2">{{ party.starts_at|date:"F j, Y" }}</p>
+  </footer>
+
+</body>
+</html>

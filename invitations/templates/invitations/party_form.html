@@ -1,0 +1,60 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}{% if party %}Edit {{ party.name }}{% else %}New party{% endif %}{% endblock %}
+
+{% block content %}
+  <h1>{% if party %}Edit party{% else %}New party{% endif %}</h1>
+  {% if not party %}
+    <p class="meta">Step 1 of 2 — basics, template, and palette. You'll customize the template content next.</p>
+  {% endif %}
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+
+      {# Render the basics, template-choice radios, and palette select with #}
+      {# slightly nicer layout than form.as_p. #}
+      <p>
+        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% if form.name.help_text %}<span class="meta">{{ form.name.help_text }}</span>{% endif %}
+        {{ form.name.errors }}
+      </p>
+      <p>
+        <label for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+        {{ form.location }}{{ form.location.errors }}
+      </p>
+      <p>
+        <label for="{{ form.starts_at.id_for_label }}">{{ form.starts_at.label }}</label>
+        {{ form.starts_at }}{{ form.starts_at.errors }}
+      </p>
+      <p>
+        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description }}{{ form.description.errors }}
+      </p>
+
+      <fieldset style="border:1px solid var(--border); border-radius:8px; padding:1rem; margin: 1rem 0;">
+        <legend>Invitation template</legend>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;">
+          {% for radio in form.template_choice %}
+            <label style="display:block; border:1px solid var(--border); border-radius:6px; padding:0.75rem; cursor:pointer;">
+              {{ radio.tag }}
+              <strong style="margin-left:0.5rem;">{{ radio.choice_label }}</strong>
+            </label>
+          {% endfor %}
+        </div>
+        {{ form.template_choice.errors }}
+      </fieldset>
+
+      <p>
+        <label for="{{ form.palette.id_for_label }}">{{ form.palette.label }}</label>
+        {{ form.palette }}
+        <span class="meta">Don't see what you want? <a href="{% url 'palette_create' %}">Create a new palette</a>.</span>
+        {{ form.palette.errors }}
+      </p>
+
+      <button type="submit" class="btn">{% if party %}Save changes{% else %}Continue → customize template{% endif %}</button>
+      <a class="btn btn-secondary" href="{% if party %}{% url 'party_detail' party.id %}{% else %}{% url 'party_list' %}{% endif %}">Cancel</a>
+    </form>
+  </div>
+{% endblock %}

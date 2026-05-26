@@ -1,0 +1,27 @@
+.git
+.gitignore
+.github
+.venv
+venv
+env
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+
+# Local env / secrets
+.env
+.env.local
+
+# Build / artifacts
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+*.log
+
+# OS / IDE
+.DS_Store
+.idea
+.vscode
+*.swp

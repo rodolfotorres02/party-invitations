@@ -1,0 +1,24 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Customize {{ party.name }}{% endblock %}
+
+{% block content %}
+  <h1>Customize template</h1>
+  <p class="meta">
+    Step 2 of 2 — template-specific content for the <strong>{{ theme.display_name }}</strong> template.
+  </p>
+
+  <div class="card">
+    {% if form.fields %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Save and finish</button>
+        <a class="btn btn-secondary" href="{% url 'party_detail' party.id %}">Skip for now</a>
+      </form>
+    {% else %}
+      <p class="meta">The <strong>{{ theme.display_name }}</strong> template has no extra fields to fill in.</p>
+      <a class="btn" href="{% url 'party_detail' party.id %}">Finish</a>
+    {% endif %}
+  </div>
+{% endblock %}

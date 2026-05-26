@@ -1,0 +1,16 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Create invitation link{% endblock %}
+
+{% block content %}
+  <h1>Create invitation link</h1>
+  <p class="meta">for <strong>{{ party.name }}</strong></p>
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn">Create Link</button>
+      <a class="btn btn-secondary" href="{% url 'party_detail' party.id %}">Cancel</a>
+    </form>
+  </div>
+{% endblock %}

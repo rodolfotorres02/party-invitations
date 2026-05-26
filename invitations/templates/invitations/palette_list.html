@@ -1,0 +1,31 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Color palettes{% endblock %}
+
+{% block content %}
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Color palettes</h1>
+    <a class="btn" href="{% url 'palette_create' %}">+ New palette</a>
+  </div>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+    {% for palette in palettes %}
+      <div class="card" style="margin-bottom:0;">
+        <h2 style="font-size: 1.1rem;">{{ palette.name }}</h2>
+        <div style="display:flex; gap: 4px; margin: 0.75rem 0;">
+          <div title="Primary {{ palette.primary_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.primary_color }};"></div>
+          <div title="Secondary {{ palette.secondary_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.secondary_color }};"></div>
+          <div title="Surface {{ palette.surface_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.surface_color }}; border:1px solid var(--border);"></div>
+          <div title="Text {{ palette.text_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.text_color }};"></div>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <a class="btn btn-secondary" href="{% url 'palette_edit' palette.id %}">Edit</a>
+          <form action="{% url 'palette_delete' palette.id %}" method="post" onsubmit="return confirm('Delete this palette?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary">Delete</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}{% if palette %}Edit palette{% else %}New palette{% endif %}{% endblock %}
+
+{% block content %}
+  <h1>{% if palette %}Edit palette{% else %}New palette{% endif %}</h1>
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn">Save palette</button>
+      <a class="btn btn-secondary" href="{% url 'palette_list' %}">Cancel</a>
+    </form>
+  </div>
+{% endblock %}
