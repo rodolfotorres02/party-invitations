@@ -3,22 +3,71 @@
 {% block title %}Customize {{ party.name }}{% endblock %}
 
 {% block content %}
-  <h1>Customize template</h1>
-  <p class="meta">
-    Step 2 of 2 — template-specific content for the <strong>{{ theme.display_name }}</strong> template.
-  </p>
 
-  <div class="card">
-    {% if form.fields %}
-      <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn">Save and finish</button>
-        <a class="btn btn-secondary" href="{% url 'party_detail' party.id %}">Skip for now</a>
-      </form>
-    {% else %}
-      <p class="meta">The <strong>{{ theme.display_name }}</strong> template has no extra fields to fill in.</p>
-      <a class="btn" href="{% url 'party_detail' party.id %}">Finish</a>
-    {% endif %}
+  <ol class="flex items-center gap-3 text-sm mb-8">
+    <li class="flex items-center gap-2 text-zinc-500">
+      <span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+        <span class="material-symbols-outlined" style="font-size:14px;">check</span>
+      </span>
+      <span>Basics</span>
+    </li>
+    <li class="flex-1 h-px bg-zinc-200"></li>
+    <li class="flex items-center gap-2">
+      <span class="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-medium">2</span>
+      <span class="font-medium text-zinc-900">Customize</span>
+    </li>
+  </ol>
+
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">Customize template</h1>
+    <p class="text-zinc-500 text-sm mt-1">
+      Content for the <strong class="text-zinc-700">{{ theme.display_name }}</strong> template. Anything blank just won't render.
+    </p>
   </div>
+
+  {% if form.fields %}
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      {% for group in form.grouped_fields %}
+        <section class="bg-white border border-zinc-200 rounded-xl p-6">
+          <h2 class="text-sm font-semibold text-zinc-900">{{ group.title }}</h2>
+          <p class="text-xs text-zinc-500 mt-0.5 mb-4">{{ group.subtitle }}</p>
+          <div class="form-prose">
+            {% for field in group.fields %}
+              <p>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {{ field.errors }}
+              </p>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+
+      <div class="flex items-center justify-end gap-2">
+        <a href="{% url 'party_detail' party.id %}"
+           class="px-4 py-2 rounded-lg text-zinc-700 hover:bg-zinc-100 text-sm font-medium">Skip for now</a>
+        <button type="submit"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+          <span class="material-symbols-outlined">check</span>
+          Save and finish
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <div class="bg-white border border-zinc-200 rounded-xl p-10 text-center">
+      <span class="material-symbols-outlined text-zinc-400" style="font-size:48px;">auto_awesome</span>
+      <h2 class="mt-4 text-lg font-semibold text-zinc-900">All set</h2>
+      <p class="mt-1 text-sm text-zinc-500">
+        The <strong>{{ theme.display_name }}</strong> template has no extra fields to fill in.
+      </p>
+      <a href="{% url 'party_detail' party.id %}"
+         class="inline-flex items-center gap-1.5 mt-5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+        Finish
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </a>
+    </div>
+  {% endif %}
 {% endblock %}

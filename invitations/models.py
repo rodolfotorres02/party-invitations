@@ -4,6 +4,7 @@ import uuid
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 HEX_COLOR = RegexValidator(
@@ -133,6 +134,11 @@ class Party(TimestampedModel):
 class Invitation(TimestampedModel):
     """A shareable link created by the organizer for a group of guests."""
 
+    LANGUAGE_CHOICES = (
+        ("en", "English"),
+        ("es", "Español"),
+    )
+
     party = models.ForeignKey(
         Party, on_delete=models.CASCADE, related_name="invitations"
     )
@@ -145,6 +151,12 @@ class Invitation(TimestampedModel):
         help_text="How many people this invitation is for.",
     )
     message = models.TextField(blank=True)
+    language = models.CharField(
+        max_length=8,
+        choices=LANGUAGE_CHOICES,
+        default="en",
+        help_text="Language used for chrome text on the public invitation page.",
+    )
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     class Meta:
@@ -156,9 +168,9 @@ class Invitation(TimestampedModel):
 
 class RSVP(TimestampedModel):
     class Status(models.TextChoices):
-        YES = "yes", "Yes"
-        NO = "no", "No"
-        MAYBE = "maybe", "Maybe"
+        YES = "yes", _("Yes")
+        NO = "no", _("No")
+        MAYBE = "maybe", _("Maybe")
 
     invitation = models.OneToOneField(
         Invitation, on_delete=models.CASCADE, related_name="rsvp"

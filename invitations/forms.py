@@ -6,7 +6,7 @@ from typing import Any, Iterable, Sequence
 from django import forms
 from django.contrib.auth.models import AbstractBaseUser
 
-from invitations.models import RSVP, Palette, Party
+from invitations.models import Invitation, RSVP, Palette, Party
 from invitations.themes import all_themes, get_theme
 
 
@@ -99,6 +99,22 @@ class PartyForm(forms.Form):
         self.fields["palette"].choices = _palette_choices(host)
 
 
+# Visual grouping of the extras form. The wizard renders one card per group
+# that has at least one field present.
+_EXTRAS_GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    ("Hero & timing", "Top of the invitation.",
+     ("hero_subtitle", "rsvp_deadline")),
+    ("Story", "A short paragraph about the occasion.",
+     ("our_story", "details_body")),
+    ("Ceremony", "The main event.",
+     ("ceremony_time", "ceremony_venue", "ceremony_address")),
+    ("Reception", "Where the celebration continues.",
+     ("reception_time", "reception_venue", "reception_address")),
+    ("Lodging", "Hotels, accommodations, travel info.",
+     ("lodging_info",)),
+)
+
+
 class PartyExtrasForm(forms.Form):
     """Step 2 of the wizard: theme-specific content fields.
 
@@ -123,6 +139,18 @@ class PartyExtrasForm(forms.Form):
     @property
     def field_names(self) -> Iterable[str]:
         return iter(self._field_names)
+
+    def grouped_fields(self) -> list[dict[str, Any]]:
+        """Return [{title, subtitle, fields: [BoundField]}] for non-empty groups.
+
+        Used by the wizard template to render fields in labelled sections.
+        """
+        result: list[dict[str, Any]] = []
+        for title, subtitle, names in _EXTRAS_GROUPS:
+            present = [self[name] for name in names if name in self.fields]
+            if present:
+                result.append({"title": title, "subtitle": subtitle, "fields": present})
+        return result
 
 
 class PaletteForm(forms.Form):
@@ -161,6 +189,12 @@ class InvitationForm(forms.Form):
         label="Number of guests",
         help_text="How many people this link is good for.",
     )
+    language = forms.ChoiceField(
+        choices=Invitation.LANGUAGE_CHOICES,
+        initial="en",
+        label="Invitation language",
+        help_text="The recipient will see chrome text (labels, dates) in this language.",
+    )
     message = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3}),
         required=False,
@@ -169,7 +203,11 @@ class InvitationForm(forms.Form):
 
 
 class RSVPForm(forms.Form):
-    status = forms.ChoiceField(choices=RSVP.Status.choices, label="Will you attend?")
+    status = forms.ChoiceField(
+        choices=RSVP.Status.choices,
+        label="Will you attend?",
+        widget=forms.RadioSelect,
+    )
     message = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3}),
         required=False,

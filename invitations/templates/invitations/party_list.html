@@ -3,23 +3,63 @@
 {% block title %}Your parties{% endblock %}
 
 {% block content %}
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h1>Your parties</h1>
-    <a class="btn" href="{% url 'party_create' %}">+ New party</a>
+  <div class="flex items-end justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-semibold tracking-tight text-zinc-900">Parties</h1>
+      <p class="text-zinc-500 mt-1 text-sm">Create events and share invitation links with your guests.</p>
+    </div>
+    <a href="{% url 'party_create' %}"
+       class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+      <span class="material-symbols-outlined">add</span>
+      New party
+    </a>
   </div>
 
   {% if parties %}
-    {% for party in parties %}
-      <div class="card">
-        <h2><a href="{% url 'party_detail' party.id %}" style="color:inherit; text-decoration:none">{{ party.name }}</a></h2>
-        <p class="meta">{{ party.starts_at|date:"l, F j, Y · g:i A" }} · {{ party.location }}</p>
-        {% if party.description %}<p>{{ party.description|truncatewords:30 }}</p>{% endif %}
-      </div>
-    {% endfor %}
+    <div class="grid sm:grid-cols-2 gap-4">
+      {% for party in parties %}
+        <a href="{% url 'party_detail' party.id %}"
+           class="group block bg-white border border-zinc-200 rounded-xl p-5 hover:border-zinc-300 hover:shadow-sm transition">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-base font-semibold text-zinc-900 truncate group-hover:text-brand-700 transition">{{ party.name }}</h2>
+              <p class="text-sm text-zinc-500 mt-0.5 truncate">{{ party.location }}</p>
+            </div>
+            {% if party.palette %}
+              <div class="flex shrink-0 -space-x-1" title="{{ party.palette.name }}">
+                <span class="block w-4 h-4 rounded-full ring-2 ring-white" style="background:{{ party.palette.primary_color }}"></span>
+                <span class="block w-4 h-4 rounded-full ring-2 ring-white" style="background:{{ party.palette.secondary_color }}"></span>
+                <span class="block w-4 h-4 rounded-full ring-2 ring-white" style="background:{{ party.palette.surface_color }}"></span>
+                <span class="block w-4 h-4 rounded-full ring-2 ring-white" style="background:{{ party.palette.text_color }}"></span>
+              </div>
+            {% endif %}
+          </div>
+
+          <dl class="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <dt class="text-zinc-400 uppercase tracking-wider">When</dt>
+              <dd class="text-zinc-700 mt-0.5">{{ party.starts_at|date:"M j, Y" }} · {{ party.starts_at|date:"g:i A" }}</dd>
+            </div>
+            <div>
+              <dt class="text-zinc-400 uppercase tracking-wider">Template</dt>
+              <dd class="text-zinc-700 mt-0.5">{{ party.get_template_choice_display }}</dd>
+            </div>
+          </dl>
+        </a>
+      {% endfor %}
+    </div>
   {% else %}
-    <div class="card">
-      <p class="meta">You haven't created any parties yet.</p>
-      <a class="btn" href="{% url 'party_create' %}">Create your first party</a>
+    <div class="bg-white border border-zinc-200 rounded-xl p-10 text-center">
+      <span class="material-symbols-outlined text-zinc-400" style="font-size:48px;">celebration</span>
+      <h2 class="mt-4 text-lg font-semibold text-zinc-900">No parties yet</h2>
+      <p class="mt-1 text-sm text-zinc-500 max-w-sm mx-auto">
+        Create your first party to start designing an invitation and sharing it with guests.
+      </p>
+      <a href="{% url 'party_create' %}"
+         class="inline-flex items-center gap-1.5 mt-5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+        <span class="material-symbols-outlined">add</span>
+        Create a party
+      </a>
     </div>
   {% endif %}
 {% endblock %}

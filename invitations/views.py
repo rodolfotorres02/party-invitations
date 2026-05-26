@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import translation
 from django.views import View
 
 from invitations.forms import (
@@ -275,11 +276,16 @@ class InvitationCreateView(LoginRequiredMixin, View):
             party_id, request.user, **form.cleaned_data
         )
         return redirect(
-            "invitation_link", party_id=party_id, invitation_id=invitation.pk
+            "invitation_detail",
+            party_id=party_id,
+            invitation_id=invitation.pk,
         )
 
 
-class InvitationLinkView(LoginRequiredMixin, View):
+class InvitationDetailView(LoginRequiredMixin, View):
+    """Host-only detail page: shows the URL, the personal message the host
+    sent, and (if present) the guest's RSVP response and message."""
+
     def get(
         self, request: HttpRequest, party_id: int, invitation_id: int
     ) -> HttpResponse:
@@ -292,8 +298,13 @@ class InvitationLinkView(LoginRequiredMixin, View):
         )
         return render(
             request,
-            "invitations/invitation_link.html",
-            {"invitation": invitation, "party": invitation.party, "public_url": public_url},
+            "invitations/invitation_detail.html",
+            {
+                "invitation": invitation,
+                "party": invitation.party,
+                "public_url": public_url,
+                "rsvp": getattr(invitation, "rsvp", None),
+            },
         )
 
 
@@ -331,17 +342,19 @@ class InvitationPublicView(View):
         )
         # Fall back to the host's default palette if the party has none assigned.
         palette = party.palette or PaletteService().default_for_host(party.host)
-        return render(
-            request,
-            theme.template_path,
-            {
-                "invitation": invitation,
-                "party": party,
-                "palette": palette,
-                "rsvp": existing_rsvp,
-                "form": RSVPForm(initial=initial),
-            },
-        )
+        # Render chrome strings + dates in the invitation's chosen language.
+        with translation.override(invitation.language):
+            return render(
+                request,
+                theme.template_path,
+                {
+                    "invitation": invitation,
+                    "party": party,
+                    "palette": palette,
+                    "rsvp": existing_rsvp,
+                    "form": RSVPForm(initial=initial),
+                },
+            )
 
 
 class RSVPSubmitView(View):
@@ -357,17 +370,18 @@ class RSVPSubmitView(View):
             party = invitation.party
             theme = get_theme(party.template_choice)
             palette = party.palette or PaletteService().default_for_host(party.host)
-            return render(
-                request,
-                theme.template_path,
-                {
-                    "invitation": invitation,
-                    "party": party,
-                    "palette": palette,
-                    "rsvp": None,
-                    "form": form,
-                },
-            )
+            with translation.override(invitation.language):
+                return render(
+                    request,
+                    theme.template_path,
+                    {
+                        "invitation": invitation,
+                        "party": party,
+                        "palette": palette,
+                        "rsvp": getattr(invitation, "rsvp", None),
+                        "form": form,
+                    },
+                )
 
         RSVPService(invitation_service=invitation_service).submit(
             token, **form.cleaned_data

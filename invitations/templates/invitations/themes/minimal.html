@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="en" class="light">
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ invitation.language }}" class="light">
 <head>
   {% include "invitations/themes/_theme_head.html" %}
 </head>
@@ -8,8 +8,8 @@
   <header class="px-margin-mobile md:px-margin-desktop py-6 flex items-center justify-between">
     <span class="font-display text-lg">{{ party.name }}</span>
     <nav class="hidden md:flex gap-6 uppercase text-xs tracking-widest text-on-surface-variant">
-      <a href="#details" class="hover:text-primary">Details</a>
-      <a href="#rsvp" class="hover:text-primary">RSVP</a>
+      <a href="#details" class="hover:text-primary">{% trans "Details" %}</a>
+      <a href="#rsvp" class="hover:text-primary">{% trans "RSVP" %}</a>
     </nav>
   </header>
 
@@ -22,7 +22,7 @@
       <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant italic mb-6">{{ party.hero_subtitle }}</p>
     {% endif %}
     <h1 class="font-display text-5xl md:text-7xl">{{ party.name }}</h1>
-    <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant mt-8">{{ party.starts_at|date:"l, F j, Y" }}</p>
+    <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant mt-8">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
     {% if party.description %}
       <p class="text-on-surface-variant max-w-md mx-auto mt-4">{{ party.description|linebreaksbr }}</p>
     {% endif %}
@@ -32,18 +32,18 @@
   <section id="details" class="px-margin-mobile md:px-margin-desktop py-section-gap bg-surface-container-low/50">
     <div class="max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
       <div>
-        <h2 class="font-display text-4xl mb-8">The Details</h2>
+        <h2 class="font-display text-4xl mb-8">{% trans "The Details" %}</h2>
         {% if party.details_body %}
           <p class="text-on-surface-variant leading-relaxed mb-6">{{ party.details_body|linebreaksbr }}</p>
         {% endif %}
         <dl class="space-y-4 mt-8">
           <div>
-            <dt class="uppercase text-xs tracking-widest text-on-surface-variant">Where</dt>
+            <dt class="uppercase text-xs tracking-widest text-on-surface-variant">{% trans "Where" %}</dt>
             <dd class="font-display text-xl mt-1">{{ party.location }}</dd>
           </div>
           <div>
-            <dt class="uppercase text-xs tracking-widest text-on-surface-variant">When</dt>
-            <dd class="font-display text-xl mt-1">{{ party.starts_at|date:"F j, Y · g:i A" }}</dd>
+            <dt class="uppercase text-xs tracking-widest text-on-surface-variant">{% trans "When" %}</dt>
+            <dd class="font-display text-xl mt-1">{{ party.starts_at|date:"DATETIME_FORMAT" }}</dd>
           </div>
         </dl>
       </div>
@@ -55,16 +55,16 @@
 
   {# --- RSVP ---------------------------------------------------------- #}
   <section id="rsvp" class="px-margin-mobile md:px-margin-desktop py-section-gap">
-    <h2 class="font-display text-4xl text-center mb-2">RSVP</h2>
+    <h2 class="font-display text-4xl text-center mb-2">{% trans "RSVP" %}</h2>
     <p class="text-center text-on-surface-variant text-sm mb-12 uppercase tracking-widest">
-      Please respond
+      {% trans "Please respond" %}
     </p>
     {% include "invitations/themes/_rsvp_form.html" %}
   </section>
 
   <footer class="w-full py-section-gap bg-surface-container-low flex flex-col items-center gap-2 text-center border-t border-outline-variant/20">
     <span class="font-display text-xl">{{ party.name }}</span>
-    <span class="uppercase text-xs tracking-widest text-on-surface-variant">{{ party.starts_at|date:"F j, Y" }}</span>
+    <span class="uppercase text-xs tracking-widest text-on-surface-variant">{{ party.starts_at|date:"DATE_FORMAT" }}</span>
   </footer>
 
 </body>

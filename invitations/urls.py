@@ -25,9 +25,9 @@ urlpatterns = [
         name="invitation_create",
     ),
     path(
-        "parties/<int:party_id>/invitations/<int:invitation_id>/link/",
-        views.InvitationLinkView.as_view(),
-        name="invitation_link",
+        "parties/<int:party_id>/invitations/<int:invitation_id>/",
+        views.InvitationDetailView.as_view(),
+        name="invitation_detail",
     ),
     path(
         "parties/<int:party_id>/invitations/<int:invitation_id>/revoke/",

@@ -1,0 +1,108 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: party-invitations\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-05-26\n"
+"Language-Team: es\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "No"
+msgstr "No"
+
+msgid "Maybe"
+msgstr "Tal vez"
+
+#, python-format
+msgid "Hi %(name)s,"
+msgstr "Hola %(name)s,"
+
+#, python-format
+msgid "This invitation is for <strong>%(counter)s guest</strong>."
+msgid_plural "This invitation is for <strong>%(counter)s guests</strong>."
+msgstr[0] "Esta invitación es para <strong>%(counter)s invitado</strong>."
+msgstr[1] "Esta invitación es para <strong>%(counter)s invitados</strong>."
+
+#, python-format
+msgid "Kindly reply by %(deadline)s"
+msgstr "Responde antes del %(deadline)s, por favor"
+
+#, python-format
+msgid "Current response: <strong>%(status)s</strong> · update below."
+msgstr "Respuesta actual: <strong>%(status)s</strong> · actualízala abajo."
+
+msgid "Will you attend?"
+msgstr "¿Asistirás?"
+
+msgid "Your message · sent"
+msgstr "Tu mensaje · enviado"
+
+#, python-format
+msgid "Sent %(sent_at)s · this message can't be edited."
+msgstr "Enviado el %(sent_at)s · este mensaje no se puede editar."
+
+msgid "Message for the host (optional)"
+msgstr "Mensaje para el anfitrión (opcional)"
+
+msgid "Update RSVP"
+msgstr "Actualizar respuesta"
+
+msgid "Send RSVP"
+msgstr "Enviar respuesta"
+
+msgid "Our Story"
+msgstr "Nuestra Historia"
+
+msgid "When & Where"
+msgstr "Cuándo y Dónde"
+
+msgid "RSVP"
+msgstr "Confirmación"
+
+msgid "Schedule"
+msgstr "Programa"
+
+msgid "Ceremony"
+msgstr "Ceremonia"
+
+msgid "The Ceremony"
+msgstr "La Ceremonia"
+
+msgid "Reception"
+msgstr "Recepción"
+
+msgid "The Reception"
+msgstr "La Recepción"
+
+msgid "Please respond"
+msgstr "Por favor responde"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Kindly Reply"
+msgstr "Responde por favor"
+
+msgid "The Details"
+msgstr "Los Detalles"
+
+msgid "Lodging"
+msgstr "Hospedaje"
+
+msgid "Details coming soon."
+msgstr "Detalles próximamente."
+
+msgid "We can't wait to celebrate with you"
+msgstr "No podemos esperar a celebrar contigo"
+
+msgid "Where"
+msgstr "Dónde"
+
+msgid "When"
+msgstr "Cuándo"

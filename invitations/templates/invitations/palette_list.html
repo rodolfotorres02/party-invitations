@@ -3,27 +3,43 @@
 {% block title %}Color palettes{% endblock %}
 
 {% block content %}
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h1>Color palettes</h1>
-    <a class="btn" href="{% url 'palette_create' %}">+ New palette</a>
+  <div class="flex items-end justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-semibold tracking-tight text-zinc-900">Palettes</h1>
+      <p class="text-zinc-500 mt-1 text-sm">Reusable color palettes for your invitation pages.</p>
+    </div>
+    <a href="{% url 'palette_create' %}"
+       class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+      <span class="material-symbols-outlined">add</span>
+      New palette
+    </a>
   </div>
 
-  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for palette in palettes %}
-      <div class="card" style="margin-bottom:0;">
-        <h2 style="font-size: 1.1rem;">{{ palette.name }}</h2>
-        <div style="display:flex; gap: 4px; margin: 0.75rem 0;">
-          <div title="Primary {{ palette.primary_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.primary_color }};"></div>
-          <div title="Secondary {{ palette.secondary_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.secondary_color }};"></div>
-          <div title="Surface {{ palette.surface_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.surface_color }}; border:1px solid var(--border);"></div>
-          <div title="Text {{ palette.text_color }}" style="flex:1; height:42px; border-radius:4px; background:{{ palette.text_color }};"></div>
+      <div class="group bg-white border border-zinc-200 rounded-xl overflow-hidden hover:border-zinc-300 hover:shadow-sm transition">
+        {# Hero stripe: big swatches, 4 vertical bars #}
+        <div class="grid grid-cols-4 h-32">
+          <div title="Primary {{ palette.primary_color }}" style="background:{{ palette.primary_color }};"></div>
+          <div title="Secondary {{ palette.secondary_color }}" style="background:{{ palette.secondary_color }};"></div>
+          <div title="Surface {{ palette.surface_color }}" style="background:{{ palette.surface_color }};"></div>
+          <div title="Text {{ palette.text_color }}" style="background:{{ palette.text_color }};"></div>
         </div>
-        <div style="display:flex; gap:0.5rem;">
-          <a class="btn btn-secondary" href="{% url 'palette_edit' palette.id %}">Edit</a>
-          <form action="{% url 'palette_delete' palette.id %}" method="post" onsubmit="return confirm('Delete this palette?');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary">Delete</button>
-          </form>
+        <div class="p-4 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <h2 class="text-sm font-semibold text-zinc-900 truncate">{{ palette.name }}</h2>
+            <p class="text-xs text-zinc-500 mt-0.5">{{ palette.parties.count }} part{{ palette.parties.count|pluralize:"y,ies" }}</p>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <a href="{% url 'palette_edit' palette.id %}"
+               class="px-2.5 py-1 rounded-md border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-xs font-medium">Edit</a>
+            <form action="{% url 'palette_delete' palette.id %}" method="post" onsubmit="return confirm('Delete this palette?');">
+              {% csrf_token %}
+              <button type="submit" class="px-2.5 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-xs font-medium">
+                Delete
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     {% endfor %}

@@ -10,8 +10,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # psycopg[binary] ships its own libpq, so we only need runtime tools.
+# gettext is needed at runtime so `manage.py compilemessages` can build
+# .mo files from the .po sources.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+    && apt-get install -y --no-install-recommends curl gettext \
     && rm -rf /var/lib/apt/lists/*
 
 # Dependencies first — cached unless requirements.txt changes.

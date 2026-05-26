@@ -1,0 +1,146 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Invitation for {{ invitation.label }}{% endblock %}
+
+{% block content %}
+  <nav class="text-xs text-zinc-500 mb-3">
+    <a href="{% url 'party_list' %}" class="hover:text-zinc-700">Parties</a>
+    <span class="mx-1.5">/</span>
+    <a href="{% url 'party_detail' party.id %}" class="hover:text-zinc-700">{{ party.name }}</a>
+    <span class="mx-1.5">/</span>
+    <span class="text-zinc-700">{{ invitation.label }}</span>
+  </nav>
+
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight text-zinc-900 flex items-center gap-2">
+        <span class="material-symbols-outlined text-brand-600">mail</span>
+        Invitation for {{ invitation.label }}
+      </h1>
+      <p class="text-zinc-500 text-sm mt-1">
+        {{ invitation.num_guests }} guest{{ invitation.num_guests|pluralize }} · {{ party.name }} · created {{ invitation.created_at|date:"M j, Y" }}
+      </p>
+      <p class="text-zinc-500 text-xs mt-1">
+        <span class="material-symbols-outlined" style="font-size:14px;">translate</span>
+        Public page renders in <strong class="text-zinc-700">{{ invitation.get_language_display }}</strong>
+      </p>
+    </div>
+    <form action="{% url 'invitation_revoke' party.id invitation.id %}" method="post" onsubmit="return confirm('Revoke this invitation?');">
+      {% csrf_token %}
+      <button type="submit" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium">
+        Revoke
+      </button>
+    </form>
+  </div>
+
+  <div class="grid lg:grid-cols-5 gap-6 items-start">
+
+    {# --- Left: link + host message --- #}
+    <section class="bg-white border border-zinc-200 rounded-xl p-6 lg:col-span-3">
+      <label for="invite-url" class="block text-xs uppercase tracking-wider text-zinc-500 mb-2">Public URL</label>
+      <div class="flex gap-2">
+        <input id="invite-url" type="text" value="{{ public_url }}" readonly
+               onclick="this.select();"
+               class="flex-1 px-3 py-2 rounded-lg border border-zinc-200 bg-zinc-50 text-sm font-mono text-zinc-700 focus-ring">
+        <button type="button" id="copy-btn"
+                data-default-label="Copy"
+                data-copied-label="Copied!"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring whitespace-nowrap">
+          <span class="material-symbols-outlined">content_copy</span>
+          <span>Copy</span>
+        </button>
+      </div>
+      <p class="text-xs text-zinc-500 mt-3">Anyone with this link can RSVP. Share it however you like — text, email, paper.</p>
+
+      {% if invitation.message %}
+        <div class="mt-5 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg">
+          <p class="text-xs uppercase tracking-wider text-zinc-500 mb-1">Personal message to {{ invitation.label }}</p>
+          <p class="text-sm italic text-zinc-700 leading-relaxed">&ldquo;{{ invitation.message|linebreaksbr }}&rdquo;</p>
+        </div>
+      {% endif %}
+
+      <div class="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-zinc-100">
+        <a href="{{ public_url }}" target="_blank"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-sm font-medium">
+          <span class="material-symbols-outlined">open_in_new</span>
+          Preview as guest
+        </a>
+        <a href="{% url 'invitation_create' party.id %}"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-sm font-medium">
+          Create another
+        </a>
+        <a href="{% url 'party_detail' party.id %}"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-600 hover:bg-zinc-100 text-sm font-medium">
+          Back to party
+        </a>
+      </div>
+    </section>
+
+    {# --- Right: RSVP response --- #}
+    <aside class="lg:col-span-2">
+      <section class="bg-white border border-zinc-200 rounded-xl p-6">
+        <h2 class="text-sm font-semibold text-zinc-900 mb-3">Their response</h2>
+
+        {% if rsvp %}
+          <div class="mb-4">
+            {% if rsvp.status == 'yes' %}
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium">
+                <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span>
+                Yes — they're coming
+              </span>
+            {% elif rsvp.status == 'no' %}
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 text-sm font-medium">
+                <span class="material-symbols-outlined" style="font-size:16px;">cancel</span>
+                No — they can't make it
+              </span>
+            {% else %}
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-sm font-medium">
+                <span class="material-symbols-outlined" style="font-size:16px;">help</span>
+                Maybe
+              </span>
+            {% endif %}
+          </div>
+
+          {% if rsvp.message %}
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
+              <p class="text-xs uppercase tracking-wider text-zinc-500 mb-1.5">Message from {{ invitation.label }}</p>
+              <p class="text-sm text-zinc-800 leading-relaxed whitespace-pre-line">{{ rsvp.message }}</p>
+            </div>
+          {% else %}
+            <p class="text-xs text-zinc-500 italic">No message included.</p>
+          {% endif %}
+
+          <p class="text-xs text-zinc-500 mt-4">
+            Responded {{ rsvp.responded_at|date:"M j, Y · g:i A" }}
+          </p>
+        {% else %}
+          <div class="text-center py-6">
+            <span class="material-symbols-outlined text-zinc-300" style="font-size:36px;">hourglass_empty</span>
+            <p class="text-sm text-zinc-500 mt-2">No response yet</p>
+            <p class="text-xs text-zinc-400 mt-1">You'll see {{ invitation.label }}'s reply here when they RSVP.</p>
+          </div>
+        {% endif %}
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    (function () {
+      var btn = document.getElementById("copy-btn");
+      var input = document.getElementById("invite-url");
+      var labelSpan = btn.querySelector("span:last-child");
+      btn.addEventListener("click", function () {
+        navigator.clipboard.writeText(input.value).then(function () {
+          labelSpan.textContent = btn.dataset.copiedLabel;
+          btn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+          btn.classList.remove("bg-zinc-900", "hover:bg-zinc-800");
+          setTimeout(function () {
+            labelSpan.textContent = btn.dataset.defaultLabel;
+            btn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
+            btn.classList.add("bg-zinc-900", "hover:bg-zinc-800");
+          }, 1800);
+        });
+      });
+    })();
+  </script>
+{% endblock %}

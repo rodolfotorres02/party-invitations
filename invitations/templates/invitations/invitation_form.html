@@ -3,14 +3,58 @@
 {% block title %}Create invitation link{% endblock %}
 
 {% block content %}
-  <h1>Create invitation link</h1>
-  <p class="meta">for <strong>{{ party.name }}</strong></p>
-  <div class="card">
-    <form method="post">
+  <nav class="text-xs text-zinc-500 mb-3">
+    <a href="{% url 'party_list' %}" class="hover:text-zinc-700">Parties</a>
+    <span class="mx-1.5">/</span>
+    <a href="{% url 'party_detail' party.id %}" class="hover:text-zinc-700">{{ party.name }}</a>
+    <span class="mx-1.5">/</span>
+    <span class="text-zinc-700">New link</span>
+  </nav>
+
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">New invitation link</h1>
+    <p class="text-zinc-500 text-sm mt-1">A shareable URL just for this recipient.</p>
+  </div>
+
+  <div class="max-w-xl">
+    <form method="post" class="bg-white border border-zinc-200 rounded-xl p-6">
       {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn">Create Link</button>
-      <a class="btn btn-secondary" href="{% url 'party_detail' party.id %}">Cancel</a>
+      <div class="form-prose">
+        <p>
+          <label for="{{ form.label.id_for_label }}">{{ form.label.label }}</label>
+          {{ form.label }}
+          {% if form.label.help_text %}<small>{{ form.label.help_text }}</small>{% endif %}
+          {{ form.label.errors }}
+        </p>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <p>
+            <label for="{{ form.num_guests.id_for_label }}">{{ form.num_guests.label }}</label>
+            {{ form.num_guests }}
+            {% if form.num_guests.help_text %}<small>{{ form.num_guests.help_text }}</small>{% endif %}
+            {{ form.num_guests.errors }}
+          </p>
+          <p>
+            <label for="{{ form.language.id_for_label }}">{{ form.language.label }}</label>
+            {{ form.language }}
+            {% if form.language.help_text %}<small>{{ form.language.help_text }}</small>{% endif %}
+            {{ form.language.errors }}
+          </p>
+        </div>
+        <p>
+          <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+          {{ form.message }}
+          {{ form.message.errors }}
+        </p>
+      </div>
+      <div class="flex items-center justify-end gap-2 mt-2">
+        <a href="{% url 'party_detail' party.id %}"
+           class="px-4 py-2 rounded-lg text-zinc-700 hover:bg-zinc-100 text-sm font-medium">Cancel</a>
+        <button type="submit"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+          <span class="material-symbols-outlined">link</span>
+          Create Link
+        </button>
+      </div>
     </form>
   </div>
 {% endblock %}

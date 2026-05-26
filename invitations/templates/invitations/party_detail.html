@@ -3,62 +3,114 @@
 {% block title %}{{ party.name }}{% endblock %}
 
 {% block content %}
-  <div style="display:flex; justify-content:space-between; align-items:start;">
-    <div>
-      <h1>{{ party.name }}</h1>
-      <p class="meta">{{ party.starts_at|date:"l, F j, Y · g:i A" }} · {{ party.location }}</p>
-      <p class="meta">Template: <strong>{{ theme.display_name }}</strong>{% if party.palette %} · Palette: <strong>{{ party.palette.name }}</strong>{% endif %}</p>
+
+  <nav class="text-xs text-zinc-500 mb-3">
+    <a href="{% url 'party_list' %}" class="hover:text-zinc-700">Parties</a>
+    <span class="mx-1.5">/</span>
+    <span class="text-zinc-700">{{ party.name }}</span>
+  </nav>
+
+  <div class="flex items-start justify-between gap-4 mb-8">
+    <div class="min-w-0">
+      <h1 class="text-3xl font-semibold tracking-tight text-zinc-900 truncate">{{ party.name }}</h1>
+      <p class="text-zinc-500 text-sm mt-1">{{ party.starts_at|date:"l, F j, Y · g:i A" }} · {{ party.location }}</p>
+
+      <div class="flex items-center gap-3 mt-4 text-xs">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700">
+          <span class="material-symbols-outlined" style="font-size:14px;">style</span>
+          {{ theme.display_name }}
+        </span>
+        {% if party.palette %}
+          <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-700">
+            <span class="flex -space-x-1">
+              <span class="block w-3 h-3 rounded-full ring-2 ring-zinc-100" style="background:{{ party.palette.primary_color }}"></span>
+              <span class="block w-3 h-3 rounded-full ring-2 ring-zinc-100" style="background:{{ party.palette.secondary_color }}"></span>
+              <span class="block w-3 h-3 rounded-full ring-2 ring-zinc-100" style="background:{{ party.palette.surface_color }}"></span>
+              <span class="block w-3 h-3 rounded-full ring-2 ring-zinc-100" style="background:{{ party.palette.text_color }}"></span>
+            </span>
+            {{ party.palette.name }}
+          </span>
+        {% endif %}
+      </div>
     </div>
-    <div>
-      <a class="btn btn-secondary" href="{% url 'party_edit' party.id %}">Edit</a>
-      <a class="btn btn-secondary" href="{% url 'party_extras' party.id %}">Customize template</a>
-      <form action="{% url 'party_delete' party.id %}" method="post" style="display:inline" onsubmit="return confirm('Delete this party?');">
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="{% url 'party_edit' party.id %}"
+         class="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-sm font-medium">Edit</a>
+      <a href="{% url 'party_extras' party.id %}"
+         class="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 text-sm font-medium">Customize</a>
+      <form action="{% url 'party_delete' party.id %}" method="post" onsubmit="return confirm('Delete this party?');">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Delete</button>
+        <button type="submit" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium">
+          Delete
+        </button>
       </form>
     </div>
   </div>
 
   {% if party.description %}
-    <div class="card"><p>{{ party.description|linebreaksbr }}</p></div>
+    <section class="bg-white border border-zinc-200 rounded-xl p-6 mb-6">
+      <p class="text-zinc-700 leading-relaxed text-sm">{{ party.description|linebreaksbr }}</p>
+    </section>
   {% endif %}
 
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2>Invitation links</h2>
-      <a class="btn" href="{% url 'invitation_create' party.id %}">+ Create Link</a>
-    </div>
+  <section class="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+    <header class="px-6 py-4 flex items-center justify-between border-b border-zinc-100">
+      <div>
+        <h2 class="text-base font-semibold text-zinc-900">Invitation links</h2>
+        <p class="text-xs text-zinc-500 mt-0.5">Each link is good for the number of guests you set.</p>
+      </div>
+      <a href="{% url 'invitation_create' party.id %}"
+         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+        <span class="material-symbols-outlined">add</span>
+        Create Link
+      </a>
+    </header>
 
     {% if invitations %}
-      <table>
-        <thead>
+      <table class="w-full text-sm">
+        <thead class="text-xs uppercase tracking-wider text-zinc-500 bg-zinc-50/50">
           <tr>
-            <th>Recipient</th>
-            <th>Guests</th>
-            <th>RSVP</th>
-            <th>Created</th>
-            <th></th>
+            <th class="text-left font-medium px-6 py-3">Recipient</th>
+            <th class="text-left font-medium px-6 py-3">Guests</th>
+            <th class="text-left font-medium px-6 py-3">RSVP</th>
+            <th class="text-left font-medium px-6 py-3">Created</th>
+            <th class="text-right font-medium px-6 py-3"></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-zinc-100">
           {% for invitation in invitations %}
-            <tr>
-              <td><strong>{{ invitation.label }}</strong></td>
-              <td>{{ invitation.num_guests }}</td>
-              <td>
+            <tr class="hover:bg-zinc-50/50 transition">
+              <td class="px-6 py-3 font-medium text-zinc-900">
+                <a href="{% url 'invitation_detail' party.id invitation.id %}" class="hover:text-brand-700">{{ invitation.label }}</a>
+                <span class="ml-1 inline-flex items-center px-1.5 rounded bg-zinc-100 text-zinc-600 text-[10px] font-medium uppercase">{{ invitation.language }}</span>
+              </td>
+              <td class="px-6 py-3 text-zinc-600">{{ invitation.num_guests }}</td>
+              <td class="px-6 py-3 align-top">
                 {% if invitation.rsvp %}
-                  {{ invitation.rsvp.get_status_display }}
-                  <span class="meta">· {{ invitation.rsvp.responded_at|date:"M j" }}</span>
+                  {% if invitation.rsvp.status == 'yes' %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">Yes</span>
+                  {% elif invitation.rsvp.status == 'no' %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-medium">No</span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium">Maybe</span>
+                  {% endif %}
+                  {% if invitation.rsvp.message %}
+                    <p class="mt-1.5 text-xs italic text-zinc-600 leading-snug line-clamp-3" title="{{ invitation.rsvp.message }}">
+                      &ldquo;{{ invitation.rsvp.message }}&rdquo;
+                    </p>
+                  {% endif %}
                 {% else %}
-                  <span class="meta">No response</span>
+                  <span class="text-zinc-400 text-xs">No response</span>
                 {% endif %}
               </td>
-              <td><span class="meta">{{ invitation.created_at|date:"M j, Y" }}</span></td>
-              <td>
-                <a class="btn btn-secondary" href="{% url 'invitation_link' party.id invitation.id %}">View link</a>
-                <form action="{% url 'invitation_revoke' party.id invitation.id %}" method="post" style="display:inline" onsubmit="return confirm('Revoke this invitation?');">
+              <td class="px-6 py-3 text-zinc-500 text-xs">{{ invitation.created_at|date:"M j, Y" }}</td>
+              <td class="px-6 py-3 text-right">
+                <a href="{% url 'invitation_detail' party.id invitation.id %}"
+                   class="text-zinc-700 hover:text-zinc-900 text-xs font-medium">Details</a>
+                <span class="mx-1.5 text-zinc-300">·</span>
+                <form action="{% url 'invitation_revoke' party.id invitation.id %}" method="post" class="inline" onsubmit="return confirm('Revoke this invitation?');">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-secondary">Revoke</button>
+                  <button type="submit" class="text-red-600 hover:text-red-700 text-xs font-medium">Revoke</button>
                 </form>
               </td>
             </tr>
@@ -66,7 +118,10 @@
         </tbody>
       </table>
     {% else %}
-      <p class="meta">No invitation links yet.</p>
+      <div class="px-6 py-12 text-center">
+        <span class="material-symbols-outlined text-zinc-400" style="font-size:36px;">link</span>
+        <p class="mt-3 text-sm text-zinc-500">No invitation links yet. Create one to get a shareable URL.</p>
+      </div>
     {% endif %}
-  </div>
+  </section>
 {% endblock %}

@@ -3,13 +3,117 @@
 {% block title %}{% if palette %}Edit palette{% else %}New palette{% endif %}{% endblock %}
 
 {% block content %}
-  <h1>{% if palette %}Edit palette{% else %}New palette{% endif %}</h1>
-  <div class="card">
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn">Save palette</button>
-      <a class="btn btn-secondary" href="{% url 'palette_list' %}">Cancel</a>
-    </form>
+  <nav class="text-xs text-zinc-500 mb-3">
+    <a href="{% url 'palette_list' %}" class="hover:text-zinc-700">Palettes</a>
+    <span class="mx-1.5">/</span>
+    <span class="text-zinc-700">{% if palette %}Edit{% else %}New{% endif %}</span>
+  </nav>
+
+  <div class="mb-6">
+    <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">
+      {% if palette %}Edit palette{% else %}New palette{% endif %}
+    </h1>
+    <p class="text-zinc-500 text-sm mt-1">Pick four colors. The preview updates as you change them.</p>
   </div>
+
+  <div class="grid lg:grid-cols-5 gap-6 items-start">
+    {# Form takes 3/5 cols #}
+    <form method="post" class="bg-white border border-zinc-200 rounded-xl p-6 lg:col-span-3" id="palette-form">
+      {% csrf_token %}
+      <div class="form-prose">
+        <p>
+          <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+          {{ form.name }}{{ form.name.errors }}
+        </p>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <p>
+            <label for="{{ form.primary_color.id_for_label }}">{{ form.primary_color.label }}</label>
+            {{ form.primary_color }}{{ form.primary_color.errors }}
+          </p>
+          <p>
+            <label for="{{ form.secondary_color.id_for_label }}">{{ form.secondary_color.label }}</label>
+            {{ form.secondary_color }}{{ form.secondary_color.errors }}
+          </p>
+          <p>
+            <label for="{{ form.surface_color.id_for_label }}">{{ form.surface_color.label }}</label>
+            {{ form.surface_color }}{{ form.surface_color.errors }}
+          </p>
+          <p>
+            <label for="{{ form.text_color.id_for_label }}">{{ form.text_color.label }}</label>
+            {{ form.text_color }}{{ form.text_color.errors }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 mt-2">
+        <a href="{% url 'palette_list' %}"
+           class="px-4 py-2 rounded-lg text-zinc-700 hover:bg-zinc-100 text-sm font-medium">Cancel</a>
+        <button type="submit"
+                class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
+          <span class="material-symbols-outlined">check</span>
+          Save palette
+        </button>
+      </div>
+    </form>
+
+    {# Live preview takes 2/5 cols #}
+    <aside class="lg:col-span-2 sticky top-20">
+      <div class="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+        <div class="px-4 py-2 text-xs uppercase tracking-wider text-zinc-500 border-b border-zinc-100">Preview</div>
+        <div id="preview-canvas" class="p-6 transition-colors duration-150"
+             style="background: #f9f7f2; color: #2d2926;">
+          <p class="text-xs uppercase tracking-widest opacity-70 mb-2">Date · 2026</p>
+          <h3 class="text-2xl font-semibold mb-3" style="font-family: 'Inter', serif;">Your Party</h3>
+          <p class="text-sm opacity-80 mb-4">A short sample of body copy in the surface and text colors you've chosen.</p>
+          <div class="flex items-center gap-2 mb-4">
+            <button type="button" id="preview-primary-btn"
+                    class="px-3 py-1.5 rounded-md text-white text-xs font-medium"
+                    style="background: #768970;">Primary action</button>
+            <button type="button" id="preview-secondary-btn"
+                    class="px-3 py-1.5 rounded-md text-white text-xs font-medium"
+                    style="background: #d4af37;">Secondary</button>
+          </div>
+          <div class="flex gap-1.5">
+            <span id="sw-primary" class="block w-8 h-8 rounded-full border border-black/10" style="background:#768970"></span>
+            <span id="sw-secondary" class="block w-8 h-8 rounded-full border border-black/10" style="background:#d4af37"></span>
+            <span id="sw-surface" class="block w-8 h-8 rounded-full border border-black/10" style="background:#f9f7f2"></span>
+            <span id="sw-text" class="block w-8 h-8 rounded-full border border-black/10" style="background:#2d2926"></span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (function () {
+      var form = document.getElementById("palette-form");
+      var canvas = document.getElementById("preview-canvas");
+      var btnP = document.getElementById("preview-primary-btn");
+      var btnS = document.getElementById("preview-secondary-btn");
+      var swP = document.getElementById("sw-primary");
+      var swS = document.getElementById("sw-secondary");
+      var swSurf = document.getElementById("sw-surface");
+      var swT = document.getElementById("sw-text");
+
+      function el(name) { return form.querySelector('[name="' + name + '"]'); }
+      function sync() {
+        var primary = el("primary_color").value || "#768970";
+        var secondary = el("secondary_color").value || "#d4af37";
+        var surface = el("surface_color").value || "#f9f7f2";
+        var text = el("text_color").value || "#2d2926";
+        canvas.style.background = surface;
+        canvas.style.color = text;
+        btnP.style.background = primary;
+        btnS.style.background = secondary;
+        swP.style.background = primary;
+        swS.style.background = secondary;
+        swSurf.style.background = surface;
+        swT.style.background = text;
+      }
+      ["primary_color","secondary_color","surface_color","text_color"].forEach(function (name) {
+        var input = el(name);
+        if (input) input.addEventListener("input", sync);
+      });
+      sync();
+    })();
+  </script>
 {% endblock %}

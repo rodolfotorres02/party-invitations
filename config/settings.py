@@ -73,10 +73,20 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+
+# Languages a host can pick when creating an invitation. Adding a new locale:
+#   1. Append the tuple here.
+#   2. Run `make messages` to scaffold locale/<code>/LC_MESSAGES/django.po.
+#   3. Translate the entries and `make compilemessages`.
+LANGUAGES = [
+    ("en", "English"),
+    ("es", "Español"),
+]
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

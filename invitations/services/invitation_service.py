@@ -55,6 +55,7 @@ class InvitationService:
         label: str,
         num_guests: int = 1,
         message: str = "",
+        language: str = "en",
     ) -> Invitation:
         if num_guests < 1:
             raise ValueError("num_guests must be at least 1.")
@@ -64,6 +65,7 @@ class InvitationService:
             label=label.strip(),
             num_guests=num_guests,
             message=message,
+            language=language,
         )
 
     def revoke(self, invitation_id: int, host: AbstractBaseUser) -> None:

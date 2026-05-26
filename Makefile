@@ -9,7 +9,7 @@ WEB := $(DC) exec web
 .DEFAULT_GOAL := help
 .PHONY: help up down build rebuild logs ps restart shell bash \
         migrate makemigrations createsuperuser collectstatic test check \
-        psql clean install runserver
+        psql messages compilemessages clean install runserver
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -68,6 +68,12 @@ check: ## Run Django's system check
 
 psql: ## Open psql in the db container
 	$(DC) exec db psql -U postgres -d party_invitations
+
+messages: ## Extract translatable strings into locale/<lang>/LC_MESSAGES/django.po
+	$(WEB) python manage.py makemessages -a -i .venv --no-location
+
+compilemessages: ## Compile .po → .mo so changes take effect
+	$(WEB) python manage.py compilemessages --ignore=.venv
 
 # --- Local virtualenv (alternative to Docker) -------------------------------
 
