@@ -15,6 +15,29 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# Comma-separated list of origins trusted for CSRF on HTTPS POSTs. Required
+# by Django 4+ for cross-scheme or cross-port form posts. In production set
+# this to the public origin(s), e.g.
+#   CSRF_TRUSTED_ORIGINS=https://party-invitations-xxxxx.ondigitalocean.app
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
+# DO App Platform (and most PaaS/load balancers) terminate TLS at the edge
+# and forward to the app over plain HTTP, setting X-Forwarded-Proto: https.
+# Without this hint Django sees the request as HTTP and (a) rejects the
+# HTTPS Referer in CSRF checks and (b) won't set Secure cookies. Safe here
+# because the only deployment topology is "behind a proxy that always
+# sets this header"; do not enable if the app is ever exposed directly.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# In production, cookies must only travel over HTTPS.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
