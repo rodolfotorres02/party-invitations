@@ -1,13 +1,14 @@
 {% comment %}
-Shared <head> setup for all three theme templates.
+Shared <head> setup for every theme template.
 
-Loads Tailwind via CDN with a single `tailwind.config` that:
-  - keeps the full Ethereal Union tonal scale (for surface-container-low,
-    on-primary, etc.) intact, so derived shades still render correctly
-  - overrides the four user-driven slots (primary, secondary, surface,
-    on-surface / background / on-background) with the party's palette
-  - also exposes the 4 user colors as CSS variables so non-Tailwind CSS
-    can use them
+The four user-driven slots (primary, secondary, surface, text) are always
+overridden from the party's palette. The ~15 derived tonal slots
+(surface-container-low/high, outline, primary-container, etc.) come from
+the design-system "family" tokens — Ethereal Union for the light themes,
+Midnight Garden for the dark ones — so a custom palette still feels
+coherent with the template's intended depth and accents.
+
+`theme.family` is passed in by the view; defaults to "ethereal".
 {% endcomment %}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,8 +47,30 @@ Loads Tailwind via CDN with a single `tailwind.config` that:
           "background": "{{ palette.surface_color }}",
           "on-surface": "{{ palette.text_color }}",
           "on-background": "{{ palette.text_color }}",
-          // Derived/tonal slots from Ethereal Union — left fixed so derived
-          // surfaces still feel cohesive regardless of the user's choices.
+          {% if theme.family == "midnight" %}
+          // Midnight Garden tonal fallbacks (cool gray + emerald-tinted).
+          "surface-container-lowest": "#ffffff",
+          "surface-container-low": "#f3f3f4",
+          "surface-container": "#eeeeee",
+          "surface-container-high": "#e8e8e8",
+          "surface-container-highest": "#e2e2e2",
+          "surface-dim": "#dadada",
+          "surface-bright": "#f9f9f9",
+          "surface-variant": "#e2e2e2",
+          "on-surface-variant": "#44474c",
+          "outline": "#74777d",
+          "outline-variant": "#c4c6cd",
+          "primary-container": "#1a2b3c",
+          "on-primary-container": "#8192a7",
+          "secondary-container": "#b9eeab",
+          "on-secondary-container": "#3f6d38",
+          "tertiary": "#c5a059",
+          "on-tertiary": "#1f1300",
+          "tertiary-container": "#392700",
+          "on-tertiary-container": "#af8c47",
+          "tertiary-fixed": "#ffdea5",
+          {% else %}
+          // Ethereal Union tonal fallbacks (warm cream + sage-tinted).
           "surface-container-lowest": "#ffffff",
           "surface-container-low": "#fbf2ed",
           "surface-container": "#f5ece7",
@@ -65,6 +88,7 @@ Loads Tailwind via CDN with a single `tailwind.config` that:
           "on-secondary-container": "#745c00",
           "tertiary": "#5c5c58",
           "on-tertiary": "#ffffff",
+          {% endif %}
         },
         spacing: {
           "section-gap": "120px",

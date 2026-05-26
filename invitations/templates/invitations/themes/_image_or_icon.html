@@ -1,0 +1,17 @@
+{% comment %}
+Renders an <img> when `url` is set, otherwise falls back to a centered
+Material Symbol. Used by the themed templates so blank image URLs still
+produce a tasteful, palette-aware placeholder.
+
+Inputs:
+  url   — the image URL (may be empty)
+  icon  — material symbol name to fall back to
+  size  — pixel size for the fallback icon (default 96)
+{% endcomment %}
+{% if url %}
+  <img src="{{ url }}" alt="" class="w-full h-full object-cover" loading="lazy">
+{% else %}
+  <div class="w-full h-full flex items-center justify-center">
+    <span class="material-symbols-outlined text-primary" style="font-size: {{ size|default:96 }}px;">{{ icon }}</span>
+  </div>
+{% endif %}

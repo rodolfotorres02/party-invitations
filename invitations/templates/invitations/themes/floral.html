@@ -15,15 +15,21 @@
   </header>
 
   {# --- Hero (floral) ------------------------------------------------- #}
-  <section class="relative w-full py-section-gap text-center px-margin-mobile">
-    <div class="absolute inset-x-0 top-12 flex justify-center text-primary opacity-30 text-9xl">
-      <span class="material-symbols-outlined" style="font-size: 280px;">local_florist</span>
-    </div>
+  <section class="relative w-full py-section-gap text-center px-margin-mobile overflow-hidden">
+    {% if content.hero_image_url %}
+      <div class="absolute inset-0">
+        <img src="{{ content.hero_image_url }}" alt="" class="w-full h-full object-cover opacity-50" loading="lazy">
+      </div>
+    {% else %}
+      <div class="absolute inset-x-0 top-12 flex justify-center text-primary opacity-30 text-9xl">
+        <span class="material-symbols-outlined" style="font-size: 280px;">local_florist</span>
+      </div>
+    {% endif %}
     <div class="relative max-w-container-max mx-auto pt-20">
       <h1 class="font-display italic text-5xl md:text-7xl text-on-surface">{{ party.name }}</h1>
       <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant mt-8">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
-      {% if party.hero_subtitle %}
-        <p class="text-on-surface-variant italic mt-4 max-w-md mx-auto">{{ party.hero_subtitle }}</p>
+      {% if content.hero_subtitle %}
+        <p class="text-on-surface-variant italic mt-4 max-w-md mx-auto">{{ content.hero_subtitle }}</p>
       {% endif %}
       {% if party.description %}
         <p class="text-on-surface-variant max-w-xl mx-auto mt-6 leading-relaxed">{{ party.description|linebreaksbr }}</p>
@@ -32,15 +38,15 @@
   </section>
 
   {# --- Our Story ---------------------------------------------------- #}
-  {% if party.our_story %}
+  {% if content.our_story %}
     <section id="our-story" class="py-section-gap px-margin-mobile md:px-margin-desktop bg-background">
       <div class="max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
-        <div class="aspect-[4/3] bg-primary/30 rounded flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary text-7xl">photo_camera</span>
+        <div class="aspect-[4/3] {% if not content.our_story_image_url %}bg-primary/30{% endif %} rounded overflow-hidden">
+          {% include "invitations/themes/_image_or_icon.html" with url=content.our_story_image_url icon="photo_camera" size=112 %}
         </div>
         <div>
           <h2 class="font-display text-4xl mb-6">{% trans "Our Story" %}</h2>
-          <p class="text-on-surface-variant leading-relaxed">{{ party.our_story|linebreaksbr }}</p>
+          <p class="text-on-surface-variant leading-relaxed">{{ content.our_story|linebreaksbr }}</p>
         </div>
       </div>
     </section>
@@ -58,24 +64,24 @@
       <div class="bg-surface p-8 rounded text-center border border-outline-variant/30">
         <span class="material-symbols-outlined text-primary text-4xl mb-3">favorite</span>
         <h3 class="font-display text-2xl mb-3">{% trans "Ceremony" %}</h3>
-        {% if party.ceremony_time %}<p class="text-on-surface-variant text-sm">{{ party.ceremony_time }}</p>{% endif %}
-        {% if party.ceremony_venue %}<p class="font-display text-lg mt-2">{{ party.ceremony_venue }}</p>{% endif %}
-        {% if party.ceremony_address %}<p class="text-on-surface-variant text-sm mt-1">{{ party.ceremony_address }}</p>{% endif %}
+        {% if content.ceremony_time %}<p class="text-on-surface-variant text-sm">{{ content.ceremony_time }}</p>{% endif %}
+        {% if content.ceremony_venue %}<p class="font-display text-lg mt-2">{{ content.ceremony_venue }}</p>{% endif %}
+        {% if content.ceremony_address %}<p class="text-on-surface-variant text-sm mt-1">{{ content.ceremony_address }}</p>{% endif %}
       </div>
       {# Reception card #}
       <div class="bg-surface p-8 rounded text-center border border-outline-variant/30">
         <span class="material-symbols-outlined text-primary text-4xl mb-3">restaurant</span>
         <h3 class="font-display text-2xl mb-3">{% trans "Reception" %}</h3>
-        {% if party.reception_time %}<p class="text-on-surface-variant text-sm">{{ party.reception_time }}</p>{% endif %}
-        {% if party.reception_venue %}<p class="font-display text-lg mt-2">{{ party.reception_venue }}</p>{% endif %}
-        {% if party.reception_address %}<p class="text-on-surface-variant text-sm mt-1">{{ party.reception_address }}</p>{% endif %}
+        {% if content.reception_time %}<p class="text-on-surface-variant text-sm">{{ content.reception_time }}</p>{% endif %}
+        {% if content.reception_venue %}<p class="font-display text-lg mt-2">{{ content.reception_venue }}</p>{% endif %}
+        {% if content.reception_address %}<p class="text-on-surface-variant text-sm mt-1">{{ content.reception_address }}</p>{% endif %}
       </div>
       {# Lodging card #}
       <div class="bg-surface p-8 rounded text-center border border-outline-variant/30">
         <span class="material-symbols-outlined text-primary text-4xl mb-3">hotel</span>
         <h3 class="font-display text-2xl mb-3">{% trans "Lodging" %}</h3>
-        {% if party.lodging_info %}
-          <p class="text-on-surface-variant text-sm leading-relaxed">{{ party.lodging_info|linebreaksbr }}</p>
+        {% if content.lodging_info %}
+          <p class="text-on-surface-variant text-sm leading-relaxed">{{ content.lodging_info|linebreaksbr }}</p>
         {% else %}
           <p class="text-on-surface-variant text-sm italic">{% trans "Details coming soon." %}</p>
         {% endif %}

@@ -21,17 +21,13 @@ class PartyAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("name", "host", "description", "location", "starts_at")}),
         ("Theme", {"fields": ("template_choice", "palette")}),
-        ("Common content", {"fields": ("hero_subtitle", "rsvp_deadline")}),
-        ("Modern Minimal", {"fields": ("details_body",), "classes": ("collapse",)}),
-        ("Classic & Floral", {
-            "fields": (
-                "our_story",
-                "ceremony_time", "ceremony_venue", "ceremony_address",
-                "reception_time", "reception_venue", "reception_address",
+        ("Template content (JSON)", {
+            "fields": ("theme_content",),
+            "description": (
+                "Template-customizable copy/URLs. Edited via the host wizard; "
+                "shape is per-template (see invitations/themes.py)."
             ),
-            "classes": ("collapse",),
         }),
-        ("Floral only", {"fields": ("lodging_info",), "classes": ("collapse",)}),
     )
 
 

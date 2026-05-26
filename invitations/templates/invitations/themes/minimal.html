@@ -15,11 +15,11 @@
 
   {# --- Hero ----------------------------------------------------------- #}
   <section class="px-margin-mobile md:px-margin-desktop py-section-gap max-w-container-max mx-auto text-center">
-    <div class="mx-auto mb-12 w-full max-w-xl aspect-[3/2] bg-surface-container-low rounded flex items-center justify-center">
-      <span class="material-symbols-outlined text-primary text-6xl">local_florist</span>
+    <div class="mx-auto mb-12 w-full max-w-xl aspect-[3/2] bg-surface-container-low rounded overflow-hidden">
+      {% include "invitations/themes/_image_or_icon.html" with url=content.hero_image_url icon="local_florist" size=96 %}
     </div>
-    {% if party.hero_subtitle %}
-      <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant italic mb-6">{{ party.hero_subtitle }}</p>
+    {% if content.hero_subtitle %}
+      <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant italic mb-6">{{ content.hero_subtitle }}</p>
     {% endif %}
     <h1 class="font-display text-5xl md:text-7xl">{{ party.name }}</h1>
     <p class="uppercase text-xs tracking-[0.3em] text-on-surface-variant mt-8">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
@@ -33,8 +33,8 @@
     <div class="max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
       <div>
         <h2 class="font-display text-4xl mb-8">{% trans "The Details" %}</h2>
-        {% if party.details_body %}
-          <p class="text-on-surface-variant leading-relaxed mb-6">{{ party.details_body|linebreaksbr }}</p>
+        {% if content.details_body %}
+          <p class="text-on-surface-variant leading-relaxed mb-6">{{ content.details_body|linebreaksbr }}</p>
         {% endif %}
         <dl class="space-y-4 mt-8">
           <div>
@@ -47,8 +47,14 @@
           </div>
         </dl>
       </div>
-      <div class="aspect-square bg-primary/80 rounded flex items-center justify-center">
-        <span class="material-symbols-outlined text-on-primary text-7xl">restaurant</span>
+      <div class="aspect-square {% if not content.details_image_url %}bg-primary/80{% else %}bg-surface-container-low{% endif %} rounded overflow-hidden">
+        {% if content.details_image_url %}
+          <img src="{{ content.details_image_url }}" alt="" class="w-full h-full object-cover" loading="lazy">
+        {% else %}
+          <div class="w-full h-full flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-primary text-7xl">restaurant</span>
+          </div>
+        {% endif %}
       </div>
     </div>
   </section>

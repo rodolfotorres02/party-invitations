@@ -11,24 +11,6 @@ from invitations.models import Palette, Party
 from invitations.repositories.party_repository import PartyRepository
 
 
-# Field names on Party that the wizard's step 2 ("extras") is allowed to write.
-# Anything outside this set is silently rejected — defense-in-depth against a
-# malformed form posting to /extras/.
-_EXTRAS_ALLOWED_FIELDS = frozenset({
-    "hero_subtitle",
-    "rsvp_deadline",
-    "details_body",
-    "our_story",
-    "ceremony_time",
-    "ceremony_venue",
-    "ceremony_address",
-    "reception_time",
-    "reception_venue",
-    "reception_address",
-    "lodging_info",
-})
-
-
 class PartyNotFoundError(Exception):
     """Raised when a party cannot be found, or the user isn't authorized to see it."""
 
@@ -96,19 +78,25 @@ class PartyService:
         host: AbstractBaseUser,
         **fields: Any,
     ) -> Party:
-        """Apply the wizard step-2 'extras' to a party.
+        """Merge the wizard step-2 'extras' into the party's theme_content JSON.
 
-        Only fields in _EXTRAS_ALLOWED_FIELDS are written; the rest are dropped.
+        Empty values prune their key from the dict (keeps storage tidy); date
+        values serialize to ISO strings so JSONField can store them.
+
+        Field validity is enforced upstream by `PartyExtrasForm` — the form is
+        built dynamically from the chosen theme's `content_fields`, so only
+        valid keys reach `cleaned_data`.
         """
         party = self.get_for_host(party_id, host)
-        safe_fields = {
-            key: value
-            for key, value in fields.items()
-            if key in _EXTRAS_ALLOWED_FIELDS
-        }
-        if not safe_fields:
-            return party
-        return self._parties.update(party, **safe_fields)
+        content = dict(party.theme_content)
+        for key, value in fields.items():
+            if value in (None, ""):
+                content.pop(key, None)
+            elif hasattr(value, "isoformat"):  # date / datetime
+                content[key] = value.isoformat()
+            else:
+                content[key] = value
+        return self._parties.update(party, theme_content=content)
 
     def delete(self, party_id: int, host: AbstractBaseUser) -> None:
         party = self.get_for_host(party_id, host)

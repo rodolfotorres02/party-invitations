@@ -20,9 +20,9 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
   <p class="text-center text-on-surface-variant mb-1">
     {% blocktrans count counter=invitation.num_guests %}This invitation is for <strong>{{ counter }} guest</strong>.{% plural %}This invitation is for <strong>{{ counter }} guests</strong>.{% endblocktrans %}
   </p>
-  {% if party.rsvp_deadline %}
+  {% if content.rsvp_deadline %}
     <p class="text-center text-on-surface-variant text-sm mb-6">
-      {% blocktrans with deadline=party.rsvp_deadline|date:"DATE_FORMAT" %}Kindly reply by {{ deadline }}{% endblocktrans %}
+      {% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly reply by {{ deadline }}{% endblocktrans %}
     </p>
   {% else %}
     <p class="mb-6"></p>

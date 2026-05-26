@@ -25,6 +25,12 @@ class Theme:
     # always-required name/starts_at/location). The wizard collects these
     # in step 2.
     content_fields: Sequence[str] = field(default_factory=tuple)
+    # Design-system family. Drives the tonal-scale fallbacks in
+    # _theme_head.html — the user's 4-color palette still overrides
+    # the primary slots, but derived shades (surface-container-*, outline,
+    # etc.) come from the family's design tokens so a Midnight template
+    # rendered with a custom palette still feels coherent.
+    family: str = "ethereal"
 
 
 _THEMES: dict[str, Theme] = {
@@ -36,7 +42,9 @@ _THEMES: dict[str, Theme] = {
         template_path="invitations/themes/minimal.html",
         content_fields=(
             "hero_subtitle",
+            "hero_image_url",
             "details_body",
+            "details_image_url",
             "rsvp_deadline",
         ),
     ),
@@ -49,6 +57,7 @@ _THEMES: dict[str, Theme] = {
         content_fields=(
             "hero_subtitle",
             "our_story",
+            "our_story_image_url",
             "ceremony_time",
             "ceremony_venue",
             "ceremony_address",
@@ -66,7 +75,9 @@ _THEMES: dict[str, Theme] = {
         template_path="invitations/themes/floral.html",
         content_fields=(
             "hero_subtitle",
+            "hero_image_url",
             "our_story",
+            "our_story_image_url",
             "ceremony_time",
             "ceremony_venue",
             "ceremony_address",
@@ -74,6 +85,65 @@ _THEMES: dict[str, Theme] = {
             "reception_venue",
             "reception_address",
             "lodging_info",
+            "rsvp_deadline",
+        ),
+    ),
+    Party.TemplateChoice.MIDNIGHT_MINIMAL.value: Theme(
+        slug=Party.TemplateChoice.MIDNIGHT_MINIMAL.value,
+        display_name="Midnight Minimal",
+        description="Editorial dark layout with navy hero and gold accents. "
+        "Pairs naturally with the Midnight Garden palette.",
+        template_path="invitations/themes/midnight_minimal.html",
+        family="midnight",
+        content_fields=(
+            "hero_subtitle",
+            "hero_image_url",
+            "details_body",
+            "details_image_url",
+            "rsvp_deadline",
+        ),
+    ),
+    Party.TemplateChoice.MIDNIGHT_ELEGANCE.value: Theme(
+        slug=Party.TemplateChoice.MIDNIGHT_ELEGANCE.value,
+        display_name="Midnight Elegance",
+        description="Ornate dark theme with botanical hero, story panel, "
+        "and structured ceremony / reception cards.",
+        template_path="invitations/themes/midnight_elegance.html",
+        family="midnight",
+        content_fields=(
+            "hero_subtitle",
+            "hero_image_url",
+            "our_story",
+            "our_story_image_url",
+            "ceremony_time",
+            "ceremony_venue",
+            "ceremony_address",
+            "reception_time",
+            "reception_venue",
+            "reception_address",
+            "rsvp_deadline",
+        ),
+    ),
+    Party.TemplateChoice.MIDNIGHT_FLORAL.value: Theme(
+        slug=Party.TemplateChoice.MIDNIGHT_FLORAL.value,
+        display_name="Midnight Floral",
+        description="Light hero with botanical motifs, deep navy details, "
+        "and a gold-accented RSVP card.",
+        template_path="invitations/themes/midnight_floral.html",
+        family="midnight",
+        content_fields=(
+            "hero_subtitle",
+            "hero_image_url",
+            "our_story",
+            "our_story_image_url",
+            "ceremony_time",
+            "ceremony_venue",
+            "ceremony_address",
+            "reception_time",
+            "reception_venue",
+            "reception_address",
+            "lodging_info",
+            "dress_code",
             "rsvp_deadline",
         ),
     ),

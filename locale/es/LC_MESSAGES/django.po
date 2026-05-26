@@ -2,6 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: party-invitations\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-26 18:07+0000\n"
 "PO-Revision-Date: 2026-05-26\n"
 "Language-Team: es\n"
 "Language: es\n"
@@ -101,8 +102,35 @@ msgstr "Detalles próximamente."
 msgid "We can't wait to celebrate with you"
 msgstr "No podemos esperar a celebrar contigo"
 
-msgid "Where"
-msgstr "Dónde"
+msgid "An invitation to"
+msgstr "Una invitación a"
+
+msgid "The Beginning of Forever"
+msgstr "El comienzo del para siempre"
+
+msgid "The Walled Garden"
+msgstr "El Jardín Amurallado"
+
+msgid "The Estate"
+msgstr "La Hacienda"
+
+msgid "Will You Join Us?"
+msgstr "¿Nos acompañarás?"
+
+msgid "Save the date"
+msgstr "Reserva la fecha"
+
+msgid "From the first hello"
+msgstr "Desde el primer hola"
+
+msgid "The Celebration Details"
+msgstr "Detalles de la celebración"
 
 msgid "When"
 msgstr "Cuándo"
+
+msgid "Where"
+msgstr "Dónde"
+
+msgid "RSVP by"
+msgstr "Confirma antes del"

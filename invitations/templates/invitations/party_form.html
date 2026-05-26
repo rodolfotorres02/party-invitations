@@ -65,9 +65,13 @@
 
       <div class="grid sm:grid-cols-3 gap-3" id="template-cards">
         {% for radio in form.template_choice %}
+          {# Dark-family templates render their preview on a navy backdrop. #}
+          {% if 'midnight' in radio.data.value %}
+            {% with cardbg="bg-[#1a2b3c]" texton="text-white/40" textonalt="text-[#c5a059]" boxborder="border-white/20" %}{% endwith %}
+          {% endif %}
           <label class="group template-card cursor-pointer rounded-lg border-2 border-zinc-200 hover:border-zinc-300 transition p-4 has-[:checked]:border-zinc-900 has-[:checked]:bg-zinc-50">
             <span class="sr-only">{{ radio.tag }}</span>
-            <div class="aspect-[4/5] rounded bg-zinc-100 mb-3 overflow-hidden relative">
+            <div class="aspect-[4/5] rounded mb-3 overflow-hidden relative {% if 'midnight' in radio.data.value %}bg-[#1a2b3c]{% else %}bg-zinc-100{% endif %}">
               {% if radio.data.value == 'minimal' %}
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-zinc-300">
                   <span class="material-symbols-outlined" style="font-size:32px;">spa</span>
@@ -86,7 +90,7 @@
                   </div>
                   <span class="mt-3 text-[10px] tracking-widest uppercase">RSVP</span>
                 </div>
-              {% else %}
+              {% elif radio.data.value == 'floral' %}
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-zinc-300">
                   <span class="material-symbols-outlined" style="font-size:32px;">local_florist</span>
                   <span class="mt-1 text-[10px] tracking-widest uppercase">Floral Hero</span>
@@ -94,6 +98,35 @@
                     <span class="w-5 h-5 border border-zinc-200 rounded"></span>
                     <span class="w-5 h-5 border border-zinc-200 rounded"></span>
                     <span class="w-5 h-5 border border-zinc-200 rounded"></span>
+                  </div>
+                  <span class="mt-3 text-[10px] tracking-widest uppercase">RSVP</span>
+                </div>
+              {% elif radio.data.value == 'midnight_minimal' %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-white/40">
+                  <span class="material-symbols-outlined text-[#c5a059]" style="font-size:32px;">nights_stay</span>
+                  <span class="mt-1 text-[10px] tracking-widest uppercase">Hero</span>
+                  <span class="block mt-3 w-2/3 h-px bg-white/20"></span>
+                  <span class="mt-3 text-[10px] tracking-widest uppercase">Details</span>
+                  <span class="mt-3 text-[10px] tracking-widest uppercase text-[#c5a059]">RSVP</span>
+                </div>
+              {% elif radio.data.value == 'midnight_elegance' %}
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-white/40">
+                  <span class="material-symbols-outlined text-[#c5a059]" style="font-size:32px;">park</span>
+                  <span class="mt-1 text-[10px] tracking-widest uppercase">Our Story</span>
+                  <div class="mt-3 flex gap-1.5">
+                    <span class="w-6 h-6 border border-[#c5a059]/40 rounded"></span>
+                    <span class="w-6 h-6 border border-[#c5a059]/40 rounded"></span>
+                  </div>
+                  <span class="mt-3 text-[10px] tracking-widest uppercase">RSVP</span>
+                </div>
+              {% else %} {# midnight_floral #}
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-white/40">
+                  <span class="material-symbols-outlined text-[#c5a059]" style="font-size:32px;">filter_vintage</span>
+                  <span class="mt-1 text-[10px] tracking-widest uppercase">Floral Hero</span>
+                  <div class="mt-3 flex gap-1.5">
+                    <span class="w-5 h-5 border border-[#c5a059]/40 rounded"></span>
+                    <span class="w-5 h-5 border border-[#c5a059]/40 rounded"></span>
+                    <span class="w-5 h-5 border border-[#c5a059]/40 rounded"></span>
                   </div>
                   <span class="mt-3 text-[10px] tracking-widest uppercase">RSVP</span>
                 </div>

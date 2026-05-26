@@ -63,6 +63,30 @@ _EXTRAS_FIELD_CATALOG: dict[str, Any] = {
         widget=forms.Textarea(attrs={"rows": 4}),
         help_text="Hotel block, recommended accommodations, etc.",
     ),
+    "dress_code": lambda: forms.CharField(
+        max_length=200,
+        required=False,
+        label="Dress code",
+        help_text="e.g. 'Black tie', 'Garden formal'.",
+    ),
+    "hero_image_url": lambda: forms.URLField(
+        required=False,
+        label="Hero image URL",
+        help_text="Any public image URL (Imgur, Cloudinary, etc.). Blank = use a decorative icon.",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    ),
+    "our_story_image_url": lambda: forms.URLField(
+        required=False,
+        label="Our Story image URL",
+        help_text="Photo shown alongside the story text.",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    ),
+    "details_image_url": lambda: forms.URLField(
+        required=False,
+        label="Details image URL",
+        help_text="Side photo in the details block.",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    ),
 }
 
 
@@ -103,15 +127,17 @@ class PartyForm(forms.Form):
 # that has at least one field present.
 _EXTRAS_GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("Hero & timing", "Top of the invitation.",
-     ("hero_subtitle", "rsvp_deadline")),
-    ("Story", "A short paragraph about the occasion.",
-     ("our_story", "details_body")),
+     ("hero_subtitle", "hero_image_url", "rsvp_deadline")),
+    ("Story", "A short paragraph about the occasion, with an optional photo.",
+     ("our_story", "our_story_image_url", "details_body", "details_image_url")),
     ("Ceremony", "The main event.",
      ("ceremony_time", "ceremony_venue", "ceremony_address")),
     ("Reception", "Where the celebration continues.",
      ("reception_time", "reception_venue", "reception_address")),
     ("Lodging", "Hotels, accommodations, travel info.",
      ("lodging_info",)),
+    ("Etiquette", "Optional notes for guests.",
+     ("dress_code",)),
 )
 
 

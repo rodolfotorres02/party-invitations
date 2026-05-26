@@ -142,7 +142,8 @@ class PartyExtrasView(LoginRequiredMixin, View):
     def get(self, request: HttpRequest, party_id: int) -> HttpResponse:
         party = self._get_party(request, party_id)
         theme = get_theme(party.template_choice)
-        initial = {field: getattr(party, field) for field in theme.content_fields}
+        content = party.content_for_display()
+        initial = {field: content.get(field) for field in theme.content_fields}
         form = PartyExtrasForm(template_slug=party.template_choice, initial=initial)
         return render(
             request,
@@ -350,7 +351,9 @@ class InvitationPublicView(View):
                 {
                     "invitation": invitation,
                     "party": party,
+                    "content": party.content_for_display(),
                     "palette": palette,
+                    "theme": theme,
                     "rsvp": existing_rsvp,
                     "form": RSVPForm(initial=initial),
                 },
@@ -377,7 +380,9 @@ class RSVPSubmitView(View):
                     {
                         "invitation": invitation,
                         "party": party,
+                        "content": party.content_for_display(),
                         "palette": palette,
+                        "theme": theme,
                         "rsvp": getattr(invitation, "rsvp", None),
                         "form": form,
                     },

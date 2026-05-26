@@ -19,9 +19,10 @@ class PaletteService:
         self._palettes = palette_repository or PaletteRepository()
 
     def list_for_host(self, host: AbstractBaseUser) -> QuerySet[Palette]:
-        """List a host's palettes, lazily seeding the default if they have none."""
+        """List a host's palettes, lazily seeding the defaults if they have none."""
         if not self._palettes.host_has_any(host.pk):
-            self._palettes.create(host=host, name=Palette.DEFAULT_NAME)
+            for spec in Palette.SEED_PALETTES:
+                self._palettes.create(host=host, **spec)
         return self._palettes.list_for_host(host.pk)
 
     def get_for_host(self, palette_id: int, host: AbstractBaseUser) -> Palette:

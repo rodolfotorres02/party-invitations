@@ -1,0 +1,95 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ invitation.language }}" class="light">
+<head>
+  {% include "invitations/themes/_theme_head.html" %}
+</head>
+<body class="bg-background text-on-background antialiased">
+
+  <header class="absolute inset-x-0 top-0 z-10 px-margin-mobile md:px-margin-desktop py-6 flex items-center justify-between text-on-primary">
+    <span class="font-display text-lg">{{ party.name }}</span>
+    <nav class="hidden md:flex gap-6 uppercase text-xs tracking-widest opacity-80">
+      <a href="#story" class="hover:opacity-100">{% trans "Our Story" %}</a>
+      <a href="#details" class="hover:opacity-100">{% trans "Schedule" %}</a>
+      <a href="#rsvp" class="hover:opacity-100">{% trans "RSVP" %}</a>
+    </nav>
+  </header>
+
+  {# --- Hero (botanical/navy) ---------------------------------------- #}
+  <section class="relative bg-primary text-on-primary overflow-hidden">
+    {% if content.hero_image_url %}
+      <img src="{{ content.hero_image_url }}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-30" loading="lazy">
+    {% else %}
+      <span class="material-symbols-outlined absolute -top-10 -left-10 text-tertiary/20" style="font-size: 320px;">park</span>
+      <span class="material-symbols-outlined absolute -bottom-10 -right-10 text-tertiary/20" style="font-size: 320px;">eco</span>
+    {% endif %}
+    <div class="relative max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-40 pb-section-gap text-center">
+      <div class="inline-block border border-tertiary/50 px-12 py-10">
+        <p class="uppercase text-xs tracking-[0.3em] text-tertiary mb-4">— {% trans "An invitation to" %} —</p>
+        <h1 class="font-display italic text-5xl md:text-7xl">{{ party.name }}</h1>
+        <p class="mt-6 text-on-primary/80">
+          {{ party.starts_at|date:"DATE_FORMAT" }}
+          {% if content.hero_subtitle %}<br><span class="italic">{{ content.hero_subtitle }}</span>{% endif %}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {# --- Our Story panel (light) ------------------------------------- #}
+  {% if content.our_story or content.our_story_image_url %}
+    <section id="story" class="py-section-gap px-margin-mobile md:px-margin-desktop bg-background">
+      <div class="max-w-container-max mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <p class="uppercase text-xs tracking-widest text-tertiary mb-3">— {% trans "Our Story" %} —</p>
+          <h2 class="font-display text-4xl mb-6">{% trans "The Beginning of Forever" %}</h2>
+          {% if content.our_story %}
+            <p class="text-on-surface-variant leading-relaxed">{{ content.our_story|linebreaksbr }}</p>
+          {% endif %}
+        </div>
+        <div class="aspect-[3/4] bg-surface-container rounded overflow-hidden border border-tertiary/30">
+          {% include "invitations/themes/_image_or_icon.html" with url=content.our_story_image_url icon="favorite" size=112 %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+
+  {# --- Schedule + Venue panel (dark stripe with cards) -------------- #}
+  <section id="details" class="bg-primary text-on-primary py-section-gap px-margin-mobile md:px-margin-desktop">
+    <div class="max-w-container-max mx-auto">
+      <p class="text-center uppercase text-xs tracking-widest text-tertiary mb-3">— {% trans "Schedule" %} —</p>
+      <h2 class="font-display text-4xl text-center mb-16">{% trans "When & Where" %}</h2>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="border border-tertiary/40 p-10 rounded">
+          <p class="uppercase text-xs tracking-widest text-tertiary mb-3">— {% trans "Ceremony" %} —</p>
+          <h3 class="font-display text-2xl mb-2">{% trans "The Ceremony" %}</h3>
+          {% if content.ceremony_time %}<p class="text-on-primary/80">{{ content.ceremony_time }}</p>{% endif %}
+          {% if content.ceremony_venue %}<p class="font-display text-lg mt-3">{{ content.ceremony_venue }}</p>{% endif %}
+          {% if content.ceremony_address %}<p class="text-on-primary/60 text-sm mt-1">{{ content.ceremony_address }}</p>{% endif %}
+        </div>
+        <div class="border border-tertiary/40 p-10 rounded">
+          <p class="uppercase text-xs tracking-widest text-tertiary mb-3">— {% trans "Reception" %} —</p>
+          <h3 class="font-display text-2xl mb-2">{% trans "The Reception" %}</h3>
+          {% if content.reception_time %}<p class="text-on-primary/80">{{ content.reception_time }}</p>{% endif %}
+          {% if content.reception_venue %}<p class="font-display text-lg mt-3">{{ content.reception_venue }}</p>{% endif %}
+          {% if content.reception_address %}<p class="text-on-primary/60 text-sm mt-1">{{ content.reception_address }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# --- RSVP (light card) ------------------------------------------- #}
+  <section id="rsvp" class="bg-background py-section-gap px-margin-mobile md:px-margin-desktop">
+    <h2 class="font-display text-4xl text-center mb-2">{% trans "RSVP" %}</h2>
+    <p class="text-center text-on-surface-variant text-sm mb-12 uppercase tracking-widest">
+      {% trans "Please respond" %}
+    </p>
+    {% include "invitations/themes/_rsvp_form.html" %}
+  </section>
+
+  <footer class="w-full py-12 bg-primary text-on-primary/70 text-center border-t border-on-primary/10">
+    <span class="font-display italic text-2xl">{{ party.name }}</span>
+    <p class="uppercase text-xs tracking-widest mt-2">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
+  </footer>
+
+</body>
+</html>

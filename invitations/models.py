@@ -1,5 +1,7 @@
 """Domain models for parties, invitation links, RSVPs, and visual palettes."""
 import uuid
+from datetime import date
+from typing import Any
 
 from django.conf import settings
 from django.core.validators import RegexValidator
@@ -26,16 +28,39 @@ class TimestampedModel(models.Model):
 class Palette(TimestampedModel):
     """A reusable 4-color palette belonging to a host.
 
-    Maps to the 'Ethereal Union' Stitch design system's four override slots:
-    primary (sage), secondary (gold), surface (cream), text (charcoal).
+    Maps to a Stitch design system's four override slots:
+    primary, secondary, surface, text.
     The full Material-style tonal scale is derived from these at render time.
     """
 
+    # Defaults are still here so a single-palette `Palette()` keeps working,
+    # but new hosts get seeded with all SEED_PALETTES at first sign-in.
     DEFAULT_NAME = "Ethereal Union"
     DEFAULT_PRIMARY = "#768970"
     DEFAULT_SECONDARY = "#d4af37"
     DEFAULT_SURFACE = "#f9f7f2"
     DEFAULT_TEXT = "#2d2926"
+
+    # Palettes auto-created on a host's first visit. Keep in sync with the
+    # `family` values in invitations/themes.py — the public theme picks
+    # tonal-scale fallbacks based on its family, but the user can still pair
+    # any palette with any template.
+    SEED_PALETTES: tuple[dict[str, str], ...] = (
+        {  # Ethereal Union — light, sage/gold/cream
+            "name": "Ethereal Union",
+            "primary_color": "#768970",
+            "secondary_color": "#d4af37",
+            "surface_color": "#f9f7f2",
+            "text_color": "#2d2926",
+        },
+        {  # Midnight Garden — navy/gold/white, designed for the Midnight themes
+            "name": "Midnight Garden",
+            "primary_color": "#1a2b3c",
+            "secondary_color": "#c5a059",
+            "surface_color": "#ffffff",
+            "text_color": "#1a1c1c",
+        },
+    )
 
     host = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -68,6 +93,9 @@ class Party(TimestampedModel):
         MINIMAL = "minimal", "Modern Minimal"
         CLASSIC = "classic", "Classic Elegance"
         FLORAL = "floral", "Romantic Floral"
+        MIDNIGHT_MINIMAL = "midnight_minimal", "Midnight Minimal"
+        MIDNIGHT_ELEGANCE = "midnight_elegance", "Midnight Elegance"
+        MIDNIGHT_FLORAL = "midnight_floral", "Midnight Floral"
 
     # --- Core fields (used by every template) ------------------------------
     name = models.CharField(
@@ -85,7 +113,7 @@ class Party(TimestampedModel):
 
     # --- Theme selection ---------------------------------------------------
     template_choice = models.CharField(
-        max_length=16,
+        max_length=32,
         choices=TemplateChoice.choices,
         default=TemplateChoice.MINIMAL,
     )
@@ -97,31 +125,18 @@ class Party(TimestampedModel):
         related_name="parties",
     )
 
-    # --- Theme content (all templates) -------------------------------------
-    hero_subtitle = models.CharField(
-        max_length=300,
-        blank=True,
-        help_text="Italic intro under the hero title.",
-    )
-    rsvp_deadline = models.DateField(null=True, blank=True)
+    # --- Theme content ------------------------------------------------------
+    # All template-customizable fields live here as a JSON dict. The keys
+    # are defined in invitations/forms.py::_EXTRAS_FIELD_CATALOG and selected
+    # per-template by invitations/themes.py::Theme.content_fields. Adding a
+    # new field is purely a code change — no migration required.
+    theme_content = models.JSONField(default=dict, blank=True)
 
-    # --- Theme content (Modern Minimal) -----------------------------------
-    details_body = models.TextField(
-        blank=True,
-        help_text="Single block of details copy (Modern Minimal template).",
-    )
-
-    # --- Theme content (Classic & Floral) ----------------------------------
-    our_story = models.TextField(blank=True)
-    ceremony_time = models.CharField(max_length=200, blank=True)
-    ceremony_venue = models.CharField(max_length=200, blank=True)
-    ceremony_address = models.CharField(max_length=300, blank=True)
-    reception_time = models.CharField(max_length=200, blank=True)
-    reception_venue = models.CharField(max_length=200, blank=True)
-    reception_address = models.CharField(max_length=300, blank=True)
-
-    # --- Theme content (Floral only) ---------------------------------------
-    lodging_info = models.TextField(blank=True)
+    # Field names whose values are stored as ISO date strings in JSON.
+    # `content_for_display` parses these back into `datetime.date` objects so
+    # Django's `|date` template filter can format them. Add new date-typed
+    # fields here when they're introduced in the form catalog.
+    _DATE_CONTENT_FIELDS: tuple[str, ...] = ("rsvp_deadline",)
 
     class Meta:
         ordering = ["-starts_at"]
@@ -129,6 +144,23 @@ class Party(TimestampedModel):
 
     def __str__(self) -> str:
         return self.name
+
+    def content_for_display(self) -> dict[str, Any]:
+        """Return `theme_content` with typed values parsed for template use.
+
+        JSON has no date type, so date fields round-trip as ISO strings;
+        Django's `|date` filter only works on `date`/`datetime` objects, so
+        we parse them back here before rendering. Other values pass through.
+        """
+        result = dict(self.theme_content)
+        for key in self._DATE_CONTENT_FIELDS:
+            raw = result.get(key)
+            if isinstance(raw, str) and raw:
+                try:
+                    result[key] = date.fromisoformat(raw)
+                except ValueError:
+                    result[key] = None
+        return result
 
 
 class Invitation(TimestampedModel):
