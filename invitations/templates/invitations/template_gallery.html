@@ -1,0 +1,76 @@
+{% extends "invitations/base.html" %}
+
+{% block title %}Templates{% endblock %}
+
+{% block content %}
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-semibold tracking-tight text-zinc-900">Templates</h1>
+      <p class="text-zinc-500 mt-1 text-sm max-w-xl">
+        Live previews of every invitation template, filled in with sample
+        content. Pick one when you create a party — or try them against your
+        own palettes below.
+      </p>
+    </div>
+
+    {% if palettes %}
+      <form method="get" class="shrink-0">
+        <label for="palette-select"
+               class="block text-xs font-medium uppercase tracking-wider text-zinc-400 mb-1">
+          Preview palette
+        </label>
+        <select id="palette-select" name="palette" onchange="this.form.submit()"
+                class="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus-ring">
+          <option value="">Template default</option>
+          {% for palette in palettes %}
+            <option value="{{ palette.id }}"
+                    {% if selected_palette_id == palette.id|stringformat:'s' %}selected{% endif %}>
+              {{ palette.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for theme in themes %}
+      {% url 'template_preview' theme.slug as preview_url %}
+      <div class="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:border-zinc-300 hover:shadow-md">
+        {# Live, scaled-down preview. The iframe renders the real theme at a
+           desktop width, then CSS shrinks it into the card. #}
+        <a href="{{ preview_url }}{{ preview_query }}" target="_blank" rel="noopener"
+           class="relative block h-64 overflow-hidden bg-zinc-100"
+           title="Open full preview in a new tab">
+          <iframe src="{{ preview_url }}{{ preview_query }}"
+                  loading="lazy" tabindex="-1" aria-hidden="true"
+                  class="pointer-events-none origin-top-left"
+                  style="width: 1280px; height: 1600px; transform: scale(0.315);"></iframe>
+          <span class="absolute inset-0 ring-1 ring-inset ring-black/5"></span>
+          <span class="absolute right-3 top-3 hidden items-center gap-1 rounded-full bg-zinc-900/80 px-2.5 py-1 text-xs font-medium text-white backdrop-blur group-hover:inline-flex">
+            <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span>
+            Open
+          </span>
+        </a>
+
+        <div class="flex flex-1 flex-col p-5">
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-semibold text-zinc-900">{{ theme.display_name }}</h2>
+            <span class="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+              {{ theme.family }}
+            </span>
+          </div>
+          <p class="mt-1.5 flex-1 text-sm leading-relaxed text-zinc-500">{{ theme.description }}</p>
+          <div class="mt-4 flex items-center justify-between">
+            <a href="{{ preview_url }}{{ preview_query }}" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:text-brand-900">
+              <span class="material-symbols-outlined" style="font-size:16px;">visibility</span>
+              Full preview
+            </a>
+            <code class="text-xs text-zinc-400">{{ theme.slug }}</code>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

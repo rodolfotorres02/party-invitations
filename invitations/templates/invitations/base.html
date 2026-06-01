@@ -70,10 +70,15 @@
       <nav class="flex items-center gap-1 text-sm">
         {% if user.is_authenticated %}
           {% url 'party_list' as parties_url %}
+          {% url 'template_gallery' as templates_url %}
           {% url 'palette_list' as palettes_url %}
           <a href="{{ parties_url }}"
              class="px-3 py-1.5 rounded-md hover:bg-zinc-100 {% if request.path == parties_url or '/parties/' in request.path %}text-zinc-900 font-medium{% else %}text-zinc-600{% endif %}">
             Parties
+          </a>
+          <a href="{{ templates_url }}"
+             class="px-3 py-1.5 rounded-md hover:bg-zinc-100 {% if '/templates/' in request.path %}text-zinc-900 font-medium{% else %}text-zinc-600{% endif %}">
+            Templates
           </a>
           <a href="{{ palettes_url }}"
              class="px-3 py-1.5 rounded-md hover:bg-zinc-100 {% if '/palettes/' in request.path %}text-zinc-900 font-medium{% else %}text-zinc-600{% endif %}">

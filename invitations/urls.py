@@ -1,11 +1,19 @@
 """URL config for the invitations app."""
 from django.urls import path
 
-from invitations import views
+from invitations import preview, views
 
 
 urlpatterns = [
     path("", views.PartyListView.as_view(), name="party_list"),
+
+    # Template gallery — preview every theme with dummy data
+    path("templates/", preview.TemplateGalleryView.as_view(), name="template_gallery"),
+    path(
+        "templates/<str:slug>/preview/",
+        preview.TemplatePreviewView.as_view(),
+        name="template_preview",
+    ),
 
     # Parties
     path("parties/new/", views.PartyCreateView.as_view(), name="party_create"),
