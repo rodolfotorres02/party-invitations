@@ -134,3 +134,18 @@ msgstr "Dónde"
 
 msgid "RSVP by"
 msgstr "Confirma antes del"
+
+msgid "Q&A"
+msgstr "Preguntas"
+
+msgid "Celebration"
+msgstr "Celebración"
+
+msgid "View Map"
+msgstr "Ver Mapa"
+
+msgid "Confirm Your Attendance"
+msgstr "Confirma tu Asistencia"
+
+msgid "Frequently Asked Questions"
+msgstr "Preguntas Frecuentes"

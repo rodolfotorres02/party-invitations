@@ -96,6 +96,7 @@ class Party(TimestampedModel):
         MIDNIGHT_MINIMAL = "midnight_minimal", "Midnight Minimal"
         MIDNIGHT_ELEGANCE = "midnight_elegance", "Midnight Elegance"
         MIDNIGHT_FLORAL = "midnight_floral", "Midnight Floral"
+        SECRET_GARDEN = "secret_garden", "Secret Garden"
 
     # --- Core fields (used by every template) ------------------------------
     name = models.CharField(

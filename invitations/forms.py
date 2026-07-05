@@ -7,7 +7,12 @@ from django import forms
 from django.contrib.auth.models import AbstractBaseUser
 
 from invitations.models import Invitation, RSVP, Palette, Party
-from invitations.themes import all_themes, get_theme
+from invitations.themes import (
+    FAQ_CONTENT_FIELDS,
+    FAQ_MAX_ITEMS,
+    all_themes,
+    get_theme,
+)
 
 
 # --- Field catalog for the wizard's extras step -----------------------------
@@ -90,6 +95,33 @@ _EXTRAS_FIELD_CATALOG: dict[str, Any] = {
 }
 
 
+# The FAQ is a fixed set of discrete question/answer slots — each its own plain
+# field so it flows through the same catalog / grouped-form machinery as every
+# other extra. Generated from FAQ_MAX_ITEMS (themes.py) so the count lives in
+# one place. `n=n` binds the slot number into each no-arg factory.
+def _faq_field_factories(n: int) -> tuple[Any, Any]:
+    question = lambda n=n: forms.CharField(
+        max_length=200,
+        required=False,
+        label=f"Question {n}",
+        widget=forms.TextInput(
+            attrs={"placeholder": "e.g. Can I bring my children?"}
+        ),
+    )
+    answer = lambda n=n: forms.CharField(
+        required=False,
+        label=f"Answer {n}",
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    return question, answer
+
+
+for _i in range(1, FAQ_MAX_ITEMS + 1):
+    _EXTRAS_FIELD_CATALOG[f"faq_q{_i}"], _EXTRAS_FIELD_CATALOG[f"faq_a{_i}"] = (
+        _faq_field_factories(_i)
+    )
+
+
 def _palette_choices(host: AbstractBaseUser) -> Sequence[tuple[str, str]]:
     return [(str(p.pk), p.name) for p in Palette.objects.filter(host_id=host.pk)]
 
@@ -138,6 +170,10 @@ _EXTRAS_GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
      ("lodging_info",)),
     ("Etiquette", "Optional notes for guests.",
      ("dress_code",)),
+    ("Questions & Answers",
+     "Answer common guest questions — parking, kids, photos, dress code. "
+     "Fill in as many pairs as you need; leave the rest blank.",
+     FAQ_CONTENT_FIELDS),
 )
 
 

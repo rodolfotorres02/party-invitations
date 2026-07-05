@@ -59,6 +59,26 @@ _DUMMY_CONTENT: dict[str, object] = {
         "August 1st."
     ),
     "dress_code": "Garden formal — light suits and flowing dresses encouraged.",
+    "faq_q1": "May we take photos during the ceremony?",
+    "faq_a1": (
+        "We'd love for you to be fully present, so we're keeping the ceremony "
+        "unplugged. Our photographer will capture every moment and share them "
+        "with everyone afterward."
+    ),
+    "faq_q2": "What is the RSVP deadline?",
+    "faq_a2": (
+        "Kindly reply by August 15th so we can finalize the seating and menu."
+    ),
+    "faq_q3": "Can I bring my children?",
+    "faq_a3": (
+        "As much as we adore your little ones, this will be an adults-only "
+        "celebration so everyone can relax and enjoy the evening."
+    ),
+    "faq_q4": "Will parking be available?",
+    "faq_a4": (
+        "Yes — complimentary valet parking is available at the reception "
+        "venue, and there is street parking nearby."
+    ),
     "hero_image_url": "",
     "our_story_image_url": "",
     "details_image_url": "",

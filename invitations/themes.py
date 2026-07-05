@@ -33,6 +33,22 @@ class Theme:
     family: str = "ethereal"
 
 
+# --- FAQ content fields ------------------------------------------------------
+#
+# The Secret Garden theme's FAQ is a fixed set of discrete question/answer
+# slots (rather than one free-text blob), so the wizard collects each Q and A
+# as its own labelled field. Hosts fill in as many as they need; blank slots
+# are skipped at render time. The catalog fields (forms.py) and the render-time
+# `faq_pairs` filter (templatetags) both derive from these constants, so the
+# count lives in exactly one place.
+FAQ_MAX_ITEMS = 6
+FAQ_CONTENT_FIELDS: tuple[str, ...] = tuple(
+    name
+    for i in range(1, FAQ_MAX_ITEMS + 1)
+    for name in (f"faq_q{i}", f"faq_a{i}")
+)
+
+
 _THEMES: dict[str, Theme] = {
     Party.TemplateChoice.MINIMAL.value: Theme(
         slug=Party.TemplateChoice.MINIMAL.value,
@@ -144,6 +160,27 @@ _THEMES: dict[str, Theme] = {
             "reception_address",
             "lodging_info",
             "dress_code",
+            "rsvp_deadline",
+        ),
+    ),
+    Party.TemplateChoice.SECRET_GARDEN.value: Theme(
+        slug=Party.TemplateChoice.SECRET_GARDEN.value,
+        display_name="Secret Garden",
+        description="Airy botanical layout with a floral hero, ceremony / "
+        "reception cards, and a dedicated frequently-asked-questions "
+        "section for guest logistics.",
+        template_path="invitations/themes/secret_garden.html",
+        family="ethereal",
+        content_fields=(
+            "hero_subtitle",
+            "hero_image_url",
+            "ceremony_time",
+            "ceremony_venue",
+            "ceremony_address",
+            "reception_time",
+            "reception_venue",
+            "reception_address",
+            *FAQ_CONTENT_FIELDS,
             "rsvp_deadline",
         ),
     ),
