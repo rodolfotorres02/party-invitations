@@ -3,3 +3,7 @@ psycopg[binary]>=3.1,<4.0
 dj-database-url>=2.1,<3.0
 python-dotenv>=1.0,<2.0
 gunicorn>=22.0,<24.0
+# Serves STATIC_ROOT from gunicorn. Needed since the Wildflower Wreath theme
+# ships its artwork as static files: without this, Django doesn't serve static
+# assets when DEBUG=False and the invitation's florals 404 in production.
+whitenoise>=6.6,<7.0

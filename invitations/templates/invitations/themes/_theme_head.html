@@ -5,8 +5,14 @@ The four user-driven slots (primary, secondary, surface, text) are always
 overridden from the party's palette. The ~15 derived tonal slots
 (surface-container-low/high, outline, primary-container, etc.) come from
 the design-system "family" tokens — Ethereal Union for the light themes,
-Midnight Garden for the dark ones — so a custom palette still feels
-coherent with the template's intended depth and accents.
+Midnight Garden for the dark ones, Wildflower Wreath for the "garden"
+ones — so a custom palette still feels coherent with the template's
+intended depth and accents.
+
+The "garden" family also swaps the typeface pair: it is a translation of a
+printed, engraved invitation, so it loads Cinzel (all-caps Roman serif) for
+every block of copy and Pinyon Script for the calligraphic display lines,
+instead of the DM Sans / Playfair Display pair every other family uses.
 
 `theme.family` is passed in by the view; defaults to "ethereal".
 {% endcomment %}
@@ -16,7 +22,7 @@ coherent with the template's intended depth and accents.
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+{% if theme.family == "garden" %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Pinyon+Script&display=swap">{% else %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">{% endif %}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
 <style>
   :root {
@@ -25,8 +31,12 @@ coherent with the template's intended depth and accents.
     --pal-surface: {{ palette.surface_color }};
     --pal-text: {{ palette.text_color }};
   }
-  body { font-family: 'DM Sans', sans-serif; }
-  .font-display { font-family: 'Playfair Display', serif; }
+  {% if theme.family == "garden" %}/* Cinzel is mapped to .font-display too, so the shared _rsvp_form.html
+     partial picks up the engraved look without knowing this family exists. */
+  body { font-family: 'Cinzel', serif; }
+  .font-display { font-family: 'Cinzel', serif; }
+  .font-script { font-family: 'Pinyon Script', cursive; }{% else %}body { font-family: 'DM Sans', sans-serif; }
+  .font-display { font-family: 'Playfair Display', serif; }{% endif %}
 </style>
 <script>
   tailwind.config = {
@@ -34,8 +44,10 @@ coherent with the template's intended depth and accents.
     theme: {
       extend: {
         fontFamily: {
-          display: ["Playfair Display", "serif"],
-          body: ["DM Sans", "sans-serif"],
+          {% if theme.family == "garden" %}display: ["Cinzel", "serif"],
+          body: ["Cinzel", "serif"],
+          script: ["Pinyon Script", "cursive"],{% else %}display: ["Playfair Display", "serif"],
+          body: ["DM Sans", "sans-serif"],{% endif %}
         },
         colors: {
           // User-overridable slots (driven by the party's palette).
@@ -69,6 +81,27 @@ coherent with the template's intended depth and accents.
           "tertiary-container": "#392700",
           "on-tertiary-container": "#af8c47",
           "tertiary-fixed": "#ffdea5",
+          {% elif theme.family == "garden" %}
+          // Wildflower Wreath tonal fallbacks (paper white + olive-tinted).
+          "surface-container-lowest": "#ffffff",
+          "surface-container-low": "#fbfaf3",
+          "surface-container": "#f5f4e9",
+          "surface-container-high": "#eeede0",
+          "surface-container-highest": "#e7e6d6",
+          "surface-dim": "#dedcca",
+          "surface-bright": "#fffef9",
+          "surface-variant": "#e7e6d6",
+          "on-surface-variant": "#5b5a4e",
+          "outline": "#7a7a6a",
+          "outline-variant": "#c9c8b6",
+          "primary-container": "#546524",
+          "on-primary-container": "#eef2df",
+          "secondary-container": "#f6dee7",
+          "on-secondary-container": "#7d3855",
+          "tertiary": "#83a833",
+          "on-tertiary": "#ffffff",
+          "tertiary-container": "#e5eecd",
+          "on-tertiary-container": "#3d5210",
           {% else %}
           // Ethereal Union tonal fallbacks (warm cream + sage-tinted).
           "surface-container-lowest": "#ffffff",

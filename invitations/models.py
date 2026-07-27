@@ -60,6 +60,13 @@ class Palette(TimestampedModel):
             "surface_color": "#ffffff",
             "text_color": "#1a1c1c",
         },
+        {  # Wildflower Wreath — olive/rose/white, designed for the garden family
+            "name": "Wildflower Wreath",
+            "primary_color": "#546524",
+            "secondary_color": "#be688c",
+            "surface_color": "#ffffff",
+            "text_color": "#3b393c",
+        },
     )
 
     host = models.ForeignKey(
@@ -97,6 +104,7 @@ class Party(TimestampedModel):
         MIDNIGHT_ELEGANCE = "midnight_elegance", "Midnight Elegance"
         MIDNIGHT_FLORAL = "midnight_floral", "Midnight Floral"
         SECRET_GARDEN = "secret_garden", "Secret Garden"
+        WILDFLOWER_WREATH = "wildflower_wreath", "Wildflower Wreath"
 
     # --- Core fields (used by every template) ------------------------------
     name = models.CharField(

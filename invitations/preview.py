@@ -79,9 +79,70 @@ _DUMMY_CONTENT: dict[str, object] = {
         "Yes — complimentary valet parking is available at the reception "
         "venue, and there is street parking nearby."
     ),
+    "cover_intro": "For you",
+    "invite_body": (
+        "we have the honor of inviting you to celebrate the sacrament of "
+        "marriage with us."
+    ),
+    "seats_intro": (
+        "We are so excited and happy to celebrate this moment surrounded by "
+        "the people we love most."
+    ),
+    "dress_code_intro": (
+        "We want everyone to feel comfortable and elegant celebrating with us."
+    ),
+    "dress_code_ladies": (
+        "A long or midi dress in a soft, garden-friendly fabric. Block heels "
+        "or wedges are your friend — part of the evening is on the lawn."
+    ),
+    "dress_code_gentlemen": (
+        "A light suit with a tie, in beige, sand, sage, or soft blue. A linen "
+        "jacket works beautifully for an afternoon ceremony."
+    ),
+    "dress_code_note": (
+        "Please avoid white, beige, cream, ivory, champagne, and pink — those "
+        "shades are reserved for the bridal party. Everything else is fair "
+        "game, and we can't wait to see you."
+    ),
+    # Left blank on purpose, like the other image fields — the gallery must not
+    # hotlink photos that could 404. Unlike the other image fields there is no
+    # icon placeholder to fall back to (a photo collage has no tasteful
+    # equivalent), so the theme drops the whole collage, heading included, and
+    # the preview simply doesn't exercise that block.
+    "dress_code_inspiration_urls": "",
+    "gift_intro": (
+        "It fills us with joy to share this day with you, surrounded by your "
+        "affection. If you would like to honor us with a gift, here are a few "
+        "ways to do it."
+    ),
+    "gift_accounts": (
+        "Bank: Scotiabank\n"
+        "Beneficiary: James Whitfield\n"
+        "Account Type: Savings\n"
+        "Account Number: 1234567890\n"
+        "\n"
+        "Bank: Banco Popular\n"
+        "Beneficiary: Evelyn Marsh\n"
+        "Account Type: Checking\n"
+        "Account Number: 0987654321\n"
+        "\n"
+        "Zelle: 929-503-8010"
+    ),
+    "gift_closing": "Your presence will always be our greatest gift.",
     "hero_image_url": "",
     "our_story_image_url": "",
     "details_image_url": "",
+    "monogram_image_url": "",
+}
+
+
+# Each design-system family previews against the seed palette it was designed
+# for. Families absent here fall back to Ethereal Union (index 0), so adding a
+# family without a matching seed palette degrades gracefully.
+_FAMILY_SEED_INDEX: dict[str, int] = {
+    "ethereal": 0,
+    "midnight": 1,
+    "garden": 2,
 }
 
 
@@ -89,13 +150,10 @@ def _dummy_palette(theme: Theme) -> Palette:
     """An unsaved palette matching the theme's design-system family.
 
     Mirrors the seed palettes so dark ("midnight") themes preview against the
-    navy/gold set and light themes against the sage/cream set.
+    navy/gold set, "garden" themes against the olive/rose set, and everything
+    else against the sage/cream set.
     """
-    spec = (
-        Palette.SEED_PALETTES[1]
-        if theme.family == "midnight"
-        else Palette.SEED_PALETTES[0]
-    )
+    spec = Palette.SEED_PALETTES[_FAMILY_SEED_INDEX.get(theme.family, 0)]
     return Palette(**spec)
 
 
