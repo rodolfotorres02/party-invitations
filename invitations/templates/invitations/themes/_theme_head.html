@@ -22,8 +22,12 @@ instead of the DM Sans / Playfair Display pair every other family uses.
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-{% if theme.family == "garden" %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Pinyon+Script&display=swap">{% else %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">{% endif %}
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">
+{% comment %}Cinzel is requested at 400 and 600 only — those are the two weights the garden
+templates actually set (body copy and `font-semibold`). The Material Symbols
+variable font is skipped for this family too: the garden templates use no icons,
+and it is a large download for a page a guest opens once on a phone.{% endcomment %}
+{% if theme.family == "garden" %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Pinyon+Script&display=swap">{% else %}<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap">{% endif %}
 <style>
   :root {
     --pal-primary: {{ palette.primary_color }};

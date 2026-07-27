@@ -37,8 +37,9 @@
     {% for theme in themes %}
       {% url 'template_preview' theme.slug as preview_url %}
       <div class="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition hover:border-zinc-300 hover:shadow-md">
-        {# Live, scaled-down preview. The iframe renders the real theme at a
-           desktop width, then CSS shrinks it into the card. #}
+        {% comment %} Live, scaled-down preview. The iframe renders the real theme at a
+           desktop width, then CSS shrinks it into the card.
+        {% endcomment %}
         <a href="{{ preview_url }}{{ preview_query }}" target="_blank" rel="noopener"
            class="relative block h-64 overflow-hidden bg-zinc-100"
            title="Open full preview in a new tab">

@@ -8,6 +8,9 @@ Usage:
                       when the host has not supplied their own
   classes  required · positioning utilities, including any flip/rotate needed
                       to point the sprig into its corner
+  loading  optional · defaults to "lazy". The cover's sprig sits inside the
+                      first viewport, so that one passes "eager" — lazy-loading
+                      an image that is already on screen only delays it.
 
 All three bundled sprigs are drawn rooted at the BOTTOM of the frame growing
 upward, so a bottom corner needs no transform, a bottom-right one is usually
@@ -18,5 +21,5 @@ gets one slot rather than five, so the same image lands in each corner and the
 per-corner transform still orients it correctly.
 {% endcomment %}
 <img src="{% if content.sprig_image_url %}{{ content.sprig_image_url }}{% else %}{% static asset %}{% endif %}"
-     alt="" aria-hidden="true" loading="lazy" decoding="async"
+     alt="" aria-hidden="true" loading="{{ loading|default:'lazy' }}" decoding="async"
      class="pointer-events-none select-none {{ classes }}">

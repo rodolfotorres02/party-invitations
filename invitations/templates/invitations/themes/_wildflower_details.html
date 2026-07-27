@@ -1,0 +1,65 @@
+{% load i18n %}{% comment %}
+Everything on printed page 2 below the couple's names: the invitation sentence,
+then the ceremony and reception details.
+
+Included TWICE by wildflower_wreath.html, once inside the wreath frame and once
+below it, with `xl:hidden` / `hidden xl:block` picking exactly one. The printed
+page sets all of this inside the oval, and from 1280px up it still fits there.
+Narrower it does not: the wreath's clear interior is ~65% of its width, so copy
+that fits inside it is either unreadably narrow or forces the artwork so far
+past the viewport that both floral flanks clip off-screen entirely and the oval
+stops reading as an oval. Below `xl` the oval therefore frames the names lockup
+alone and this block follows it in clear space.
+
+The breakpoint is `xl`, not `md` — see the arithmetic in wildflower_wreath.html.
+At `md` the frame is still ~360px short of the height this copy needs, which put
+the subtitle 87% under painted flowers on every tablet and small laptop.
+
+Duplicating the markup rather than reordering keeps one flat DOM per breakpoint;
+the copy that isn't used is `display:none`, so assistive technology never sees
+both.
+
+The print labels only "RECEPCIÓN" — the ceremony detail there runs on from the
+invitation sentence above it with no heading of its own. That asymmetry is
+reproduced deliberately.
+{% endcomment %}
+{% if content.invite_body %}
+  <p class="wf-balance text-sm leading-[2] tracking-[0.16em] text-on-surface">
+    {{ content.invite_body|linebreaksbr }}
+  </p>
+{% endif %}
+
+{# Ceremony — deliberately unlabelled, as in the print. #}
+<div class="mt-12">
+  <div class="space-y-1.5 text-[0.8rem] leading-[2] tracking-[0.15em] text-on-surface">
+    <p>{{ party.starts_at|date:"DATE_FORMAT" }}</p>
+    {% if content.ceremony_time %}<p>{{ content.ceremony_time }}</p>{% endif %}
+    {% if content.ceremony_venue %}<p>{{ content.ceremony_venue }}</p>{% endif %}
+    {% if content.ceremony_address %}<p class="text-on-surface-variant">{{ content.ceremony_address }}</p>{% endif %}
+  </div>
+  {% if content.ceremony_address %}
+    <a href="https://www.google.com/maps/search/?api=1&query={{ content.ceremony_address|urlencode }}"
+       target="_blank" rel="noopener"
+       class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors">
+      {% trans "View Map" %}
+    </a>
+  {% endif %}
+</div>
+
+{% if content.reception_time or content.reception_venue or content.reception_address %}
+  <div class="mt-12">
+    <h2 class="text-[0.7rem] uppercase tracking-[0.34em]" style="color: var(--wf-ink-leaf);">{% trans "Reception" %}</h2>
+    <div class="mt-4 space-y-1.5 text-[0.8rem] leading-[2] tracking-[0.15em] text-on-surface">
+      {% if content.reception_time %}<p>{{ content.reception_time }}</p>{% endif %}
+      {% if content.reception_venue %}<p>{{ content.reception_venue }}</p>{% endif %}
+      {% if content.reception_address %}<p class="text-on-surface-variant">{{ content.reception_address }}</p>{% endif %}
+    </div>
+    {% if content.reception_address %}
+      <a href="https://www.google.com/maps/search/?api=1&query={{ content.reception_address|urlencode }}"
+         target="_blank" rel="noopener"
+         class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors">
+        {% trans "View Map" %}
+      </a>
+    {% endif %}
+  </div>
+{% endif %}
