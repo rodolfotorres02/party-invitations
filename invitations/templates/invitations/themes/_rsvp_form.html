@@ -36,20 +36,29 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
 
   <form action="{% url 'rsvp_submit' invitation.token %}" method="post" class="space-y-5">
     {% csrf_token %}
-    <div>
-      <label class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
+    {% comment %}
+    fieldset/legend, not a bare <label>: the question labels the GROUP, and a
+    <label> with no `for` and no control inside it is announced to nobody. A
+    screen reader user previously reached these radios hearing only "Yes" /
+    "No" with the question never read out.
+
+    Each option's tap target is the whole label — min-h-[44px] rather than the
+    ~16px radio glyph itself.
+    {% endcomment %}
+    <fieldset>
+      <legend class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
         {% trans "Will you attend?" %}
-      </label>
-      <div class="flex gap-4">
+      </legend>
+      <div class="flex flex-wrap gap-4">
         {% for radio in form.status %}
-          <label class="flex items-center gap-2 cursor-pointer">
+          <label class="inline-flex min-h-[44px] items-center gap-2 pr-2 cursor-pointer">
             {{ radio.tag }}
             <span class="font-display text-lg">{{ radio.choice_label }}</span>
           </label>
         {% endfor %}
       </div>
       {{ form.status.errors }}
-    </div>
+    </fieldset>
     {% if rsvp and rsvp.message %}
       {# Message already sent — show it as a read-only "sent" block. #}
       <div>
@@ -68,15 +77,18 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
         <label for="{{ form.message.id_for_label }}" class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
           {% trans "Message for the host (optional)" %}
         </label>
+        {% comment %} A 1px border-colour change was the only focus cue here; keep it and
+           add a ring, so keyboard focus is visible rather than merely different.
+        {% endcomment %}
         <textarea name="{{ form.message.html_name }}" id="{{ form.message.id_for_label }}"
                   rows="3"
-                  class="w-full bg-transparent border-b border-outline-variant focus:border-primary focus:outline-none px-1 py-2">{{ form.message.value|default:"" }}</textarea>
+                  class="w-full bg-transparent border-b border-outline-variant px-1 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">{{ form.message.value|default:"" }}</textarea>
         {{ form.message.errors }}
       </div>
     {% endif %}
     <div class="text-center">
       <button type="submit"
-              class="inline-block px-10 py-3 bg-primary text-on-primary uppercase tracking-widest text-xs hover:opacity-90 transition rounded">
+              class="inline-flex min-h-[44px] items-center justify-center px-10 py-3 bg-primary text-on-primary uppercase tracking-widest text-xs hover:opacity-90 transition rounded">
         {% if rsvp %}{% trans "Update RSVP" %}{% else %}{% trans "Send RSVP" %}{% endif %}
       </button>
     </div>

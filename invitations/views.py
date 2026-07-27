@@ -391,4 +391,11 @@ class RSVPSubmitView(View):
         RSVPService(invitation_service=invitation_service).submit(
             token, **form.cleaned_data
         )
-        return HttpResponseRedirect(reverse("invitation_public", args=[token]))
+        # Land back on the form, not the top of the page. These themes run to
+        # several thousand pixels and the only acknowledgement of a submission
+        # is the "Current response: … · update below" line inside the RSVP card
+        # itself — redirecting to the bare URL dropped the guest at the cover
+        # with no sign anything had happened. Every theme defines id="rsvp".
+        return HttpResponseRedirect(
+            f"{reverse('invitation_public', args=[token])}#rsvp"
+        )
