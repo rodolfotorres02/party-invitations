@@ -1,0 +1,22 @@
+{% load static %}{% comment %}
+One decorative corner sprig for the Wildflower Wreath theme.
+
+Usage:
+  {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-cosmos.webp" classes="absolute -bottom-8 -left-10 w-[54vw] max-w-[300px] -scale-x-100" %}
+
+  asset    required · path under static/ of the bundled illustration to use
+                      when the host has not supplied their own
+  classes  required · positioning utilities, including any flip/rotate needed
+                      to point the sprig into its corner
+
+All three bundled sprigs are drawn rooted at the BOTTOM of the frame growing
+upward, so a bottom corner needs no transform, a bottom-right one is usually
+mirrored with -scale-x-100, and a top corner hangs with rotate-180.
+
+`content.sprig_image_url` overrides every sprig on the page at once — the host
+gets one slot rather than five, so the same image lands in each corner and the
+per-corner transform still orients it correctly.
+{% endcomment %}
+<img src="{% if content.sprig_image_url %}{{ content.sprig_image_url }}{% else %}{% static asset %}{% endif %}"
+     alt="" aria-hidden="true" loading="lazy" decoding="async"
+     class="pointer-events-none select-none {{ classes }}">

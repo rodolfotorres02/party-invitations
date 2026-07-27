@@ -149,3 +149,46 @@ msgstr "Confirma tu Asistencia"
 
 msgid "Frequently Asked Questions"
 msgstr "Preguntas Frecuentes"
+
+msgid "Our Invitation"
+msgstr "Nuestra Invitación"
+
+msgid "Your Seats"
+msgstr "Tus Asientos"
+
+msgid "Dress Code"
+msgstr "Código de Vestimenta"
+
+msgid "For the ladies"
+msgstr "Para las damas"
+
+msgid "For the gentlemen"
+msgstr "Para los caballeros"
+
+msgid "Please note"
+msgstr "Nota Importante"
+
+msgid "A few ideas for inspiration"
+msgstr "Algunas ideas de inspiración"
+
+msgid "Gifts"
+msgstr "Regalos"
+
+msgid "Questions"
+msgstr "Dudas"
+
+msgid "With love"
+msgstr "Con cariño"
+
+msgid "For you"
+msgstr "Para ti"
+
+#, python-format
+msgid "We have reserved <strong>%(counter)s seat</strong> for you"
+msgid_plural "We have reserved <strong>%(counter)s seats</strong> for you"
+msgstr[0] "Hemos reservado <strong>%(counter)s asiento</strong> para ti"
+msgstr[1] "Hemos reservado <strong>%(counter)s asientos</strong> para ti"
+
+#, python-format
+msgid "Kindly confirm your attendance before %(deadline)s"
+msgstr "Agradecemos que confirmes tu asistencia antes del %(deadline)s"

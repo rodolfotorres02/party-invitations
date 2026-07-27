@@ -184,6 +184,42 @@ _THEMES: dict[str, Theme] = {
             "rsvp_deadline",
         ),
     ),
+    Party.TemplateChoice.WILDFLOWER_WREATH.value: Theme(
+        slug=Party.TemplateChoice.WILDFLOWER_WREATH.value,
+        display_name="Wildflower Wreath",
+        description="Watercolor wildflower wreath framing the invitation, "
+        "with a seats-reserved banner personalised per guest. Continues into "
+        "an illustrated dress code, a gift and registry block, and a "
+        "frequently-asked-questions section.",
+        template_path="invitations/themes/wildflower_wreath.html",
+        family="garden",
+        content_fields=(
+            "cover_intro",
+            "monogram_image_url",
+            "wreath_image_url",
+            "sprig_image_url",
+            "hero_subtitle",
+            "invite_body",
+            "ceremony_time",
+            "ceremony_venue",
+            "ceremony_address",
+            "reception_time",
+            "reception_venue",
+            "reception_address",
+            "seats_intro",
+            "rsvp_deadline",
+            "dress_code",
+            "dress_code_intro",
+            "dress_code_ladies",
+            "dress_code_gentlemen",
+            "dress_code_note",
+            "dress_code_inspiration_urls",
+            "gift_intro",
+            "gift_accounts",
+            "gift_closing",
+            *FAQ_CONTENT_FIELDS,
+        ),
+    ),
 }
 
 

@@ -1,0 +1,502 @@
+{% load i18n %}{% load static %}{% load invitation_extras %}<!DOCTYPE html>
+<html lang="{{ invitation.language }}" class="light">
+<head>
+  {% include "invitations/themes/_theme_head.html" %}
+  {% comment %}
+  Wildflower Wreath — a scrolling web translation of the 6-page printed
+  invitation. One <section> per printed page, in order:
+
+    #cover       page 1  · full-bleed olive, tone-on-tone monogram + guest name
+    #invitation  page 2  · white page inside the oval watercolor wreath
+    #seats       page 3  · full-color monogram, seats banner, RSVP deadline
+    #dress-code  page 4  · dress code copy + full-bleed inspiration collage
+    #gifts       page 5a · full-bleed olive gift block
+    #rsvp        --      · shared RSVP form (web-only, no printed equivalent)
+    #faq         page 5b · white Q&A block
+    #closing     page 6  · full-bleed mauve sign-off
+
+  Artwork: the watercolor florals are real illustrations shipped with the app,
+  in invitations/static/invitations/wildflower/ — the wreath, the monogram, and
+  three corner sprigs, as transparent WebP. They are versioned in the repo, so
+  there is no upload step and no object storage to configure; WhiteNoise serves
+  them straight out of STATIC_ROOT. Each of the three slots is overridable by
+  the host through a URL field (monogram_image_url / wreath_image_url /
+  sprig_image_url), and blank simply means "use the bundled artwork".
+
+  Color: every visible color resolves either to a palette-driven Tailwind token
+  from _theme_head.html (primary / secondary / tertiary / surface-* /
+  on-surface* — the "garden" family tonal scale) or to a --wf-* custom property
+  defined below, itself derived from the palette CSS variables (--pal-primary /
+  --pal-secondary / --pal-surface / --pal-text) with color-mix(). No hard-coded
+  color is used anywhere except as a literal fallback immediately before the
+  color-mix() declaration, for engines without color-mix() support.
+
+  The one place artwork and palette meet is the cover monogram: page 1 prints it
+  tone-on-tone, so rather than ship a second recolored file the bundled monogram
+  is used as a CSS mask over a --wf-leaf-pale fill, which keeps that treatment
+  palette-driven. A host-supplied monogram is rendered as a plain <img> instead
+  — masking it would mean interpolating a user-controlled URL into inline CSS.
+
+  Type: the "garden" family loads Cinzel (all-caps Roman serif) for body and
+  .font-display, and Pinyon Script for .font-script. Cinzel has no useful
+  lowercase contrast, so small copy leans on wide tracking and loose leading
+  instead of case for hierarchy — that is what makes the printed piece read
+  as expensive.
+  {% endcomment %}
+  <style>
+    :root {
+      /* Each slot is declared up to three times and the last one the engine
+         understands wins: a literal hex, then a color-mix() derivation, then
+         an oklch() relative-color derivation. The third tier exists because
+         mixing toward black or white also drags chroma out, which turned the
+         watercolors into dried-flower mud; oklch(from …) can drop lightness
+         while HOLDING or lifting chroma, so the botanicals stay fresh. Every
+         tier is still derived from the palette — hue is always inherited,
+         never invented. */
+
+      /* --- Foliage -----------------------------------------------------
+         The greens deliberately stay on the plain color-mix() derivation.
+         The printed piece's foliage is a soft sage-olive, and mixing the
+         primary toward white lands on it almost exactly; adding chroma here
+         turned the wreath into an acid-bright spring garland. */
+      --wf-leaf: #83a833;
+      --wf-leaf: color-mix(in srgb, var(--pal-primary) 70%, white);
+      --wf-leaf-deep: #3d5210;
+      --wf-leaf-deep: color-mix(in srgb, var(--pal-primary) 82%, black);
+      --wf-leaf-pale: #a1b06c;
+      --wf-leaf-pale: color-mix(in srgb, var(--pal-primary) 45%, white);
+      --wf-stem: #5d6b33;
+      --wf-stem: color-mix(in srgb, var(--pal-primary) 78%, var(--pal-text));
+
+      /* --- Petals ------------------------------------------------------
+         Pinks are the palette secondary (mauve); the lilac accent is the
+         secondary walked toward the ink color, which desaturates it into a
+         believable lavender without inventing a new hue. */
+      --wf-petal-pink: #be688c;
+      --wf-petal-pink: var(--pal-secondary);
+      --wf-petal-deep: #8e3f61;
+      --wf-petal-deep: color-mix(in srgb, var(--pal-secondary) 72%, black);
+      --wf-petal-deep: oklch(from var(--pal-secondary) calc(l * 0.78) calc(c * 1.3) h);
+      --wf-petal-pale: #f0cddb;
+      --wf-petal-pale: color-mix(in srgb, var(--pal-secondary) 32%, white);
+      --wf-petal-white: #fdfbfb;
+      --wf-petal-white: color-mix(in srgb, var(--pal-surface) 94%, var(--pal-secondary));
+      --wf-petal-lilac: #9b7fb5;
+      --wf-petal-lilac: color-mix(in srgb, var(--pal-secondary) 62%, var(--pal-text));
+
+      /* --- Accents ----------------------------------------------------- */
+      --wf-center: #9a7b45;            /* warm gold-brown flower centers */
+      --wf-center: color-mix(in srgb, color-mix(in srgb, var(--pal-primary) 55%, var(--pal-secondary)) 82%, white);
+    }
+
+    /* Smooth in-page nav; sections carry scroll-mt-* for the sticky bar. */
+    html { scroll-behavior: smooth; }
+
+    /* Page 1 prints the monogram tone-on-tone. Masking the bundled artwork
+       over a palette color reproduces that from the one full-color file and
+       keeps it recoloring with the host's palette. --wf-mono-src is set inline
+       so it can carry the hashed static URL. */
+    .wf-mono-tint {
+      aspect-ratio: 421 / 500;   /* the bundled monogram's intrinsic ratio */
+      background-color: var(--wf-leaf-pale);
+      -webkit-mask-image: var(--wf-mono-src);          mask-image: var(--wf-mono-src);
+      -webkit-mask-repeat: no-repeat;                  mask-repeat: no-repeat;
+      -webkit-mask-position: center;                   mask-position: center;
+      -webkit-mask-size: contain;                      mask-size: contain;
+    }
+
+    /* Ragged-but-even line breaks for the script display type. Tailwind has
+       no utility for text-wrap, and this is what keeps a three-word guest
+       name from breaking 3 + 1 at 380px. */
+    .wf-balance { text-wrap: balance; }
+
+    /* Page 4 collage — a genuine irregular masonry.
+       CSS columns give real masonry flow (no row alignment), and column-gap 0
+       plus zero margins give the gapless, edge-to-edge packing of the print
+       piece. Fixed per-item aspect ratios in a 5-step cycle keep the
+       irregularity deterministic regardless of the source images' own
+       proportions, while object-cover stops anything from distorting.
+
+       column-width rather than column-count: the printed collage is a dense
+       mosaic of many small photos, so what matters is the tile SIZE holding
+       near 200px, not the column count. The browser then fits ~2 columns on a
+       phone and ~7 on a wide desktop and the mosaic keeps its scale, instead
+       of a fixed count ballooning into a handful of huge tiles. */
+    .wf-collage { column-width: 200px; column-count: auto; column-gap: 0; }
+    .wf-collage > figure { break-inside: avoid; margin: 0; display: block; }
+    .wf-collage > figure > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .wf-collage > figure:nth-child(5n + 1) { aspect-ratio: 3 / 4; }
+    .wf-collage > figure:nth-child(5n + 2) { aspect-ratio: 1 / 1; }
+    .wf-collage > figure:nth-child(5n + 3) { aspect-ratio: 4 / 5; }
+    .wf-collage > figure:nth-child(5n + 4) { aspect-ratio: 2 / 3; }
+    .wf-collage > figure:nth-child(5n + 5) { aspect-ratio: 5 / 6; }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased">
+
+  {# --- Sticky nav ------------------------------------------------------ #}
+  <nav class="sticky top-0 z-50 bg-surface-container-lowest/85 backdrop-blur-md border-b border-outline-variant/40">
+    <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-3 flex items-center justify-between gap-6">
+      <span class="font-script text-2xl text-primary truncate">{{ party.name }}</span>
+      <div class="hidden md:flex gap-6 text-[0.68rem] uppercase tracking-[0.22em] text-on-surface-variant">
+        <a href="#invitation" class="hover:text-primary transition-colors">{% trans "Our Invitation" %}</a>
+        <a href="#dress-code" class="hover:text-primary transition-colors">{% trans "Dress Code" %}</a>
+        <a href="#gifts" class="hover:text-primary transition-colors">{% trans "Gifts" %}</a>
+        <a href="#rsvp" class="hover:text-primary transition-colors">{% trans "RSVP" %}</a>
+        <a href="#faq" class="hover:text-primary transition-colors">{% trans "Q&A" %}</a>
+      </div>
+    </div>
+  </nav>
+
+  {# ===================================================================== #}
+  {# PAGE 1 — Cover: full-bleed olive, sage monogram, script guest name.   #}
+  {# ===================================================================== #}
+  <section id="cover" class="relative min-h-screen overflow-hidden bg-primary px-margin-mobile py-24 flex flex-col items-center justify-center text-center">
+    <h2 class="sr-only">{% trans "For you" %}</h2>
+
+    {% comment %} Monogram, tone-on-tone: the bundled artwork is used as a mask over
+       pale sage, so it sits barely above the olive field exactly as in the
+       print. A host's own monogram is shown as-is — see the note at the top.
+    {% endcomment %}
+    {% if content.monogram_image_url %}
+      <img src="{{ content.monogram_image_url }}" alt=""
+           class="w-[46vw] max-w-[240px] h-auto opacity-90" loading="lazy">
+    {% else %}
+      <div class="w-[46vw] max-w-[240px] opacity-90 wf-mono-tint" aria-hidden="true"
+           style="--wf-mono-src: url('{% static 'invitations/wildflower/monogram.webp' %}');"></div>
+    {% endif %}
+
+    <div class="relative z-10 mt-20 md:mt-28 max-w-xl">
+      {% if content.cover_intro %}
+        <p class="text-[0.66rem] uppercase tracking-[0.4em] leading-loose" style="color: var(--wf-leaf-pale);">
+          {{ content.cover_intro }}
+        </p>
+      {% endif %}
+      <p class="wf-balance font-script mt-6 leading-[1.15]"
+         style="color: var(--wf-leaf-pale); font-size: clamp(2.75rem, 11vw, 5.5rem);">
+        {{ invitation.label }}
+      </p>
+    </div>
+
+    {# Bottom-right sprig, bleeding off both edges like the printed corner. #}
+    {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-waxflower.webp" classes="absolute -bottom-6 -right-3 md:-right-8 h-[200px] md:h-[340px] w-auto opacity-95" %}
+  </section>
+
+  {# ===================================================================== #}
+  {# PAGE 2 — The invitation, set inside the oval watercolor wreath.       #}
+  {# ===================================================================== #}
+  <section id="invitation" class="relative scroll-mt-20 overflow-hidden bg-surface-container-lowest px-margin-mobile md:px-margin-desktop py-24 md:py-section-gap">
+    {% comment %}
+    Fitting the copy inside the wreath.
+
+    Measured on the bundled artwork (612x792): the largest clear centred
+    rectangle inside the ring is 51% of its width by 63% of its height.
+    Everything below just sizes the artwork so that interior stays bigger than
+    the copy.
+
+    Desktop: the frame is locked to the artwork's own 612/792 aspect so the
+    wreath fills it exactly. At the 1100px cap that leaves ~560px of clear
+    width, comfortably around the 480px measure. Mobile: the wreath's dense
+    flanks would leave ~170px of measure at 380px, so instead of dropping them
+    the artwork is scaled well past the viewport and the section clips it — the
+    flanks bleed off-screen and only their inner edge frames the copy, which
+    keeps the "enclosed" feeling that defines this page.
+
+    A host-supplied wreath won't have the same proportions, so this is a
+    best-effort frame: it is positioned and scaled identically, and the copy
+    keeps its own max-width regardless.
+    {% endcomment %}
+    <div class="relative mx-auto flex w-full items-center justify-center md:aspect-[612/792] md:max-w-[1100px]">
+        <img src="{% if content.wreath_image_url %}{{ content.wreath_image_url }}{% else %}{% static 'invitations/wildflower/wreath.webp' %}{% endif %}"
+             alt="" aria-hidden="true" decoding="async"
+             class="pointer-events-none select-none absolute left-1/2 top-1/2 h-[165%] w-[215%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain md:h-full md:w-full">
+
+      {% comment %}
+      min-w-0 overrides a flex item's default min-width:auto, so an unusually
+      long hero title set in the oversized script face can't push this box wider
+      than the frame; overflow-wrap then breaks it rather than letting the
+      section's overflow-hidden crop it.
+      {% endcomment %}
+      <div class="relative z-10 mx-auto w-full min-w-0 max-w-md md:max-w-[480px] text-center [overflow-wrap:anywhere]">
+        {% if content.hero_subtitle %}
+          <p class="text-[0.7rem] uppercase tracking-[0.32em] leading-loose text-on-surface-variant">
+            {{ content.hero_subtitle }}
+          </p>
+        {% endif %}
+
+        {% comment %} The couple, stacked in script. couple_names splits party.name on the
+           first "&" / " y " / " and "; with no separator we fall back to one
+           line and never show an orphaned ampersand.
+        {% endcomment %}
+        {% with names=party.name|couple_names %}
+          <h1 class="mt-6 leading-[0.9]">
+            <span class="font-script block text-tertiary" style="font-size: clamp(3.25rem, 17vw, 8.5rem);">{{ names.first }}</span>
+            {% if names.second %}
+              {% comment %} -0.3em pulls the second line up into the first line's
+                 descenders, the nested lockup used in the print piece.
+              {% endcomment %}
+              <span class="font-script block -mt-[0.3em]" style="font-size: clamp(3.25rem, 17vw, 8.5rem);">
+                <span class="text-secondary pr-[0.06em]">{{ names.separator }}</span><span class="text-tertiary">{{ names.second }}</span>
+              </span>
+            {% endif %}
+          </h1>
+        {% endwith %}
+
+        {% if content.invite_body %}
+          <p class="wf-balance mt-8 text-sm leading-[2] tracking-[0.16em] text-on-surface">
+            {{ content.invite_body|linebreaksbr }}
+          </p>
+        {% endif %}
+
+        {# Ceremony block (page 2, upper detail paragraph). #}
+        <div class="mt-12">
+          <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-tertiary">{% trans "Ceremony" %}</h2>
+          <div class="mt-4 space-y-1.5 text-[0.8rem] leading-[2] tracking-[0.15em] text-on-surface">
+            <p>{{ party.starts_at|date:"DATE_FORMAT" }}</p>
+            {% if content.ceremony_time %}<p>{{ content.ceremony_time }}</p>{% endif %}
+            {% if content.ceremony_venue %}<p class="text-on-surface">{{ content.ceremony_venue }}</p>{% endif %}
+            {% if content.ceremony_address %}<p class="text-on-surface-variant">{{ content.ceremony_address }}</p>{% endif %}
+          </div>
+          {% if content.ceremony_address %}
+            <a href="https://www.google.com/maps/search/?api=1&query={{ content.ceremony_address|urlencode }}"
+               target="_blank" rel="noopener"
+               class="mt-5 inline-block border border-primary/60 text-primary px-7 py-2 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors">
+              {% trans "View Map" %}
+            </a>
+          {% endif %}
+        </div>
+
+        {# Reception block (page 2, "RECEPCIÓN"). #}
+        {% if content.reception_time or content.reception_venue or content.reception_address %}
+          <div class="mt-12">
+            <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-tertiary">{% trans "Reception" %}</h2>
+            <div class="mt-4 space-y-1.5 text-[0.8rem] leading-[2] tracking-[0.15em] text-on-surface">
+              {% if content.reception_time %}<p>{{ content.reception_time }}</p>{% endif %}
+              {% if content.reception_venue %}<p>{{ content.reception_venue }}</p>{% endif %}
+              {% if content.reception_address %}<p class="text-on-surface-variant">{{ content.reception_address }}</p>{% endif %}
+            </div>
+            {% if content.reception_address %}
+              <a href="https://www.google.com/maps/search/?api=1&query={{ content.reception_address|urlencode }}"
+                 target="_blank" rel="noopener"
+                 class="mt-5 inline-block border border-primary/60 text-primary px-7 py-2 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors">
+                {% trans "View Map" %}
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {# ===================================================================== #}
+  {# PAGE 3 — Seats reserved: full-color monogram + leaf-green banner.     #}
+  {# ===================================================================== #}
+  <section id="seats" class="relative scroll-mt-20 overflow-hidden bg-surface-container-lowest px-margin-mobile md:px-margin-desktop py-24 md:py-section-gap">
+    <h2 class="sr-only">{% trans "Your Seats" %}</h2>
+
+    <div class="relative z-10 mx-auto w-full max-w-xl text-center">
+      {% comment %} Same symbol as the cover, recolored purely through the two ligature
+         vars: the swash in mauve, the second letter + olive branch in green.
+      {% endcomment %}
+      <div class="mx-auto w-[38vw] max-w-[190px]"
+           style="--wf-mono-a: var(--wf-petal-pink); --wf-mono-b: var(--wf-leaf);">
+        {% if content.monogram_image_url %}
+          <img src="{{ content.monogram_image_url }}" alt="" class="w-full h-auto" loading="lazy">
+        {% else %}
+          <img src="{% static 'invitations/wildflower/monogram.webp' %}" alt=""
+               class="w-full h-auto" loading="lazy" decoding="async">
+        {% endif %}
+      </div>
+
+      {% if content.seats_intro %}
+        <p class="wf-balance mt-10 text-sm leading-[2] tracking-[0.16em] text-on-surface">
+          {{ content.seats_intro|linebreaksbr }}
+        </p>
+      {% endif %}
+
+      {% comment %} Solid leaf-green banner — ~72% of the measure at 380px so the two
+         lines still break like the print, 60% from 768px up.
+      {% endcomment %}
+      <p class="mx-auto mt-10 w-[92%] md:w-[72%] bg-tertiary text-on-tertiary px-6 py-5 text-[0.78rem] font-semibold uppercase leading-[2] tracking-[0.18em]">
+        {% blocktrans count counter=invitation.num_guests %}We have reserved <strong>{{ counter }} seat</strong> for you{% plural %}We have reserved <strong>{{ counter }} seats</strong> for you{% endblocktrans %}
+      </p>
+
+      {% if content.rsvp_deadline %}
+        <p class="wf-balance mx-auto mt-8 max-w-md text-[0.72rem] uppercase leading-[2] tracking-[0.22em] text-on-surface-variant">
+          {% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly confirm your attendance before {{ deadline }}{% endblocktrans %}
+        </p>
+      {% endif %}
+    </div>
+
+    {# Bottom-left cosmos sprig, radiating up-right out of the corner. #}
+    {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-cosmos.webp" classes="absolute -bottom-6 -left-4 md:-left-8 h-[240px] md:h-[300px] w-auto -scale-x-100" %}
+  </section>
+
+  {# ===================================================================== #}
+  {# PAGE 4 — Dress code + inspiration collage.                            #}
+  {# ===================================================================== #}
+  {% if content.dress_code or content.dress_code_intro or content.dress_code_ladies or content.dress_code_gentlemen or content.dress_code_note or content.dress_code_inspiration_urls %}
+    <section id="dress-code" class="relative scroll-mt-20 overflow-hidden bg-surface-container-lowest py-24 md:py-section-gap">
+      {# Top-left sprig, hanging down-right into the page. #}
+      {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-snapdragon.webp" classes="absolute -top-6 -left-4 md:-left-8 h-[200px] md:h-[260px] w-auto rotate-180" %}
+
+      <div class="relative z-10 mx-auto w-full max-w-2xl px-margin-mobile md:px-margin-desktop text-center">
+        <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-secondary">{% trans "Dress Code" %}</h2>
+        {% if content.dress_code %}
+          {% comment %}
+          Deliberately modest: in the print this line is set only a little
+          larger than the body copy, bold and mauve — not as a display
+          heading. It also has to survive a host writing a whole sentence
+          here rather than a two-word code.
+          {% endcomment %}
+          <p class="wf-balance mt-3 text-base md:text-lg font-semibold uppercase leading-[1.7] tracking-[0.18em] text-secondary">{{ content.dress_code }}</p>
+        {% endif %}
+
+        {% if content.dress_code_intro %}
+          <p class="wf-balance mt-6 text-sm leading-[2] tracking-[0.15em] text-on-surface">
+            {{ content.dress_code_intro|linebreaksbr }}
+          </p>
+        {% endif %}
+
+        <div class="mt-12 space-y-10 text-left">
+          {% if content.dress_code_ladies %}
+            <div>
+              <h3 class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-tertiary">{% trans "For the ladies" %}</h3>
+              <p class="mt-3 text-sm leading-[2] tracking-[0.13em] text-on-surface">{{ content.dress_code_ladies|linebreaksbr }}</p>
+            </div>
+          {% endif %}
+          {% if content.dress_code_gentlemen %}
+            <div>
+              <h3 class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-tertiary">{% trans "For the gentlemen" %}</h3>
+              <p class="mt-3 text-sm leading-[2] tracking-[0.13em] text-on-surface">{{ content.dress_code_gentlemen|linebreaksbr }}</p>
+            </div>
+          {% endif %}
+          {% if content.dress_code_note %}
+            <div class="border-l-2 border-secondary/50 pl-5">
+              <h3 class="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-secondary">{% trans "Please note" %}</h3>
+              <p class="mt-3 text-sm leading-[2] tracking-[0.13em] text-on-surface-variant">{{ content.dress_code_note|linebreaksbr }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Inspiration collage — heading and all, only when there are URLs. #}
+      {% with shots=content.dress_code_inspiration_urls|url_list %}
+        {% if shots %}
+          <h3 class="relative z-10 mx-auto mt-14 max-w-2xl px-margin-mobile text-center text-[0.7rem] uppercase tracking-[0.28em] text-on-surface-variant">
+            {% trans "A few ideas for inspiration" %}
+          </h3>
+          {% comment %} Full-bleed: this div deliberately sits outside the padded measure
+             above so the masonry runs edge to edge like the printed page.
+          {% endcomment %}
+          <div class="wf-collage mt-8 w-full">
+            {% for url in shots %}
+              <figure><img src="{{ url }}" alt="" loading="lazy" decoding="async"></figure>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </section>
+  {% endif %}
+
+  {# ===================================================================== #}
+  {# PAGE 5a — Gifts: full-bleed olive block, cream copy, left-aligned.    #}
+  {# ===================================================================== #}
+  {% if content.gift_intro or content.gift_accounts or content.gift_closing %}
+    <section id="gifts" class="relative scroll-mt-20 overflow-hidden bg-primary text-on-primary-container px-margin-mobile md:px-margin-desktop py-24 md:py-section-gap">
+      {# Sprig hanging from the top-right, overlapping into the block. #}
+      {% comment %} The print hangs this one from the TOP-right; the bundled sprigs are
+         all drawn rooted at the bottom, so it is rotated to hang down-left.
+      {% endcomment %}
+      {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-waxflower.webp" classes="absolute -top-8 -right-4 md:-right-8 h-[220px] md:h-[280px] w-auto opacity-95 rotate-180" %}
+
+      <div class="relative z-10 mx-auto w-full max-w-2xl">
+        <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-on-primary-container/70">{% trans "Gifts" %}</h2>
+
+        {% if content.gift_intro %}
+          <p class="mt-6 text-sm leading-[2.1] tracking-[0.14em]">{{ content.gift_intro|linebreaksbr }}</p>
+        {% endif %}
+
+        {% with blocks=content.gift_accounts|detail_blocks %}
+          {% if blocks %}
+            {# One column per account block: two at 768px+, stacked at 380px. #}
+            <div class="mt-10 grid gap-6 md:grid-cols-2">
+              {% for rows in blocks %}
+                <div class="border border-on-primary-container/25 px-6 py-6">
+                  <dl class="space-y-2.5">
+                    {% for row in rows %}
+                      <div class="flex flex-col gap-0.5">
+                        {% if row.label %}
+                          <dt class="text-[0.6rem] uppercase tracking-[0.26em] text-on-primary-container/60">{{ row.label }}</dt>
+                        {% endif %}
+                        <dd class="text-[0.85rem] tracking-[0.12em] text-on-primary-container">{{ row.value }}</dd>
+                      </div>
+                    {% endfor %}
+                  </dl>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% if content.gift_closing %}
+          <p class="mt-12 border-t border-on-primary-container/25 pt-8 text-sm uppercase leading-[2] tracking-[0.22em]">
+            {{ content.gift_closing }}
+          </p>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  {# ===================================================================== #}
+  {# RSVP — no printed equivalent; the web page's reason to exist.         #}
+  {# ===================================================================== #}
+  <section id="rsvp" class="scroll-mt-20 bg-surface-container-lowest px-margin-mobile md:px-margin-desktop py-24 md:py-section-gap">
+    <h2 class="text-center text-lg md:text-2xl font-semibold uppercase tracking-[0.24em] text-secondary mb-12">
+      {% trans "Confirm Your Attendance" %}
+    </h2>
+    {% include "invitations/themes/_rsvp_form.html" %}
+  </section>
+
+  {# ===================================================================== #}
+  {# PAGE 5b — FAQ: mauve heading, leaf-green questions, ink answers.      #}
+  {# ===================================================================== #}
+  {% with faq_items=content|faq_pairs %}
+    {% if faq_items %}
+      <section id="faq" class="scroll-mt-20 bg-surface-container-lowest px-margin-mobile md:px-margin-desktop pb-24 md:pb-section-gap">
+        <div class="mx-auto w-full max-w-2xl">
+          <h2 class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-secondary">
+            {% trans "Frequently Asked Questions" %}
+          </h2>
+          <div class="mt-10 space-y-10">
+            {% for item in faq_items %}
+              <div>
+                <h3 class="text-[0.78rem] font-semibold uppercase leading-[1.9] tracking-[0.18em] text-tertiary">{{ item.question }}</h3>
+                {% if item.answer %}
+                  <p class="mt-2 text-sm leading-[2.1] tracking-[0.12em] text-on-surface">{{ item.answer|linebreaksbr }}</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+  {% endwith %}
+
+  {# ===================================================================== #}
+  {# PAGE 6 — Closing: full-bleed mauve with a corner sprig.               #}
+  {# ===================================================================== #}
+  <footer id="closing" class="relative overflow-hidden bg-secondary text-on-secondary px-margin-mobile py-28 md:py-section-gap text-center">
+    <h2 class="sr-only">{% trans "With love" %}</h2>
+    <p class="wf-balance font-script leading-[1.1]" style="font-size: clamp(2.5rem, 12vw, 5rem);">{{ party.name }}</p>
+    <p class="mt-6 text-[0.66rem] uppercase tracking-[0.36em] text-on-secondary/85">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
+
+    {% comment %}
+    Page 6 reuses the cover's waxflower cluster, mirrored into the BOTTOM-LEFT
+    corner so it fans up-right the way the print does.
+    {% endcomment %}
+    {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-waxflower.webp" classes="absolute -bottom-6 -left-4 md:-left-8 h-[230px] md:h-[290px] w-auto -scale-x-100" %}
+  </footer>
+
+</body>
+</html>

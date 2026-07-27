@@ -92,6 +92,104 @@ _EXTRAS_FIELD_CATALOG: dict[str, Any] = {
         help_text="Side photo in the details block.",
         widget=forms.URLInput(attrs={"placeholder": "https://…"}),
     ),
+    "cover_intro": lambda: forms.CharField(
+        max_length=120,
+        required=False,
+        label="Cover intro",
+        help_text="Tiny line above the guest's name on the cover, e.g. 'For you'.",
+    ),
+    # The three artwork slots below all ship with bundled defaults (the
+    # watercolor set in invitations/static/invitations/wildflower/), so every
+    # one of them is an override rather than a requirement — blank means "use
+    # the artwork that comes with the template".
+    "monogram_image_url": lambda: forms.URLField(
+        required=False,
+        label="Monogram / logo image URL",
+        help_text="Your own monogram artwork, shown on the cover and above the "
+        "seats banner. Blank = the template's monogram.",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    ),
+    "wreath_image_url": lambda: forms.URLField(
+        required=False,
+        label="Wreath image URL",
+        help_text="The floral frame around the invitation. Use a PNG or WebP "
+        "with a transparent middle. Blank = the template's wreath.",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    ),
+    "sprig_image_url": lambda: forms.URLField(
+        required=False,
+        label="Corner sprig image URL",
+        help_text="Replaces all four corner sprigs with one image of your own "
+        "(the template otherwise varies three). Transparent background. "
+        "Blank = the template's sprigs.",
+        widget=forms.URLInput(attrs={"placeholder": "https://…"}),
+    ),
+    "invite_body": lambda: forms.CharField(
+        required=False,
+        label="Invitation body",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="The sentence that follows the names, e.g. 'we have the "
+        "honor of inviting you…'.",
+    ),
+    "seats_intro": lambda: forms.CharField(
+        required=False,
+        label="Seats intro",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="Warm line above the reserved-seats banner.",
+    ),
+    "dress_code_intro": lambda: forms.CharField(
+        required=False,
+        label="Dress code intro",
+        widget=forms.Textarea(attrs={"rows": 2}),
+        help_text="One line setting the tone before the per-guest guidance.",
+    ),
+    "dress_code_ladies": lambda: forms.CharField(
+        required=False,
+        label="For the ladies",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="Guidance for women — lengths, fabrics, shoes.",
+    ),
+    "dress_code_gentlemen": lambda: forms.CharField(
+        required=False,
+        label="For the gentlemen",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="Guidance for men — suits, colors, ties.",
+    ),
+    "dress_code_note": lambda: forms.CharField(
+        required=False,
+        label="Dress code note",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="Anything to avoid — reserved colors, footwear, etc.",
+    ),
+    "dress_code_inspiration_urls": lambda: forms.CharField(
+        required=False,
+        label="Inspiration photos",
+        widget=forms.Textarea(
+            attrs={"rows": 6, "placeholder": "https://…\nhttps://…"}
+        ),
+        help_text="One image URL per line. They fill the inspiration collage "
+        "in order; blank = no collage.",
+    ),
+    "gift_intro": lambda: forms.CharField(
+        required=False,
+        label="Gift intro",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text="How to phrase the ask before listing where to send a gift.",
+    ),
+    "gift_accounts": lambda: forms.CharField(
+        required=False,
+        label="Gift accounts",
+        widget=forms.Textarea(attrs={"rows": 10}),
+        help_text="One 'Label: Value' per line (e.g. 'Bank: Scotiabank'). "
+        "Separate each account with a blank line to start a new block.",
+    ),
+    "gift_closing": lambda: forms.CharField(
+        max_length=300,
+        required=False,
+        label="Gift closing",
+        help_text="The reassuring last word, e.g. 'Your presence is our "
+        "greatest gift.'",
+    ),
 }
 
 
@@ -158,18 +256,29 @@ class PartyForm(forms.Form):
 # Visual grouping of the extras form. The wizard renders one card per group
 # that has at least one field present.
 _EXTRAS_GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
+    ("Cover", "The first thing a guest sees, before the invitation itself.",
+     ("cover_intro", "monogram_image_url")),
+    ("Artwork", "Swap the template's illustrations for your own. Every field "
+     "is optional — leave one blank to keep the bundled artwork.",
+     ("wreath_image_url", "sprig_image_url")),
     ("Hero & timing", "Top of the invitation.",
-     ("hero_subtitle", "hero_image_url", "rsvp_deadline")),
+     ("hero_subtitle", "invite_body", "hero_image_url", "rsvp_deadline")),
     ("Story", "A short paragraph about the occasion, with an optional photo.",
      ("our_story", "our_story_image_url", "details_body", "details_image_url")),
     ("Ceremony", "The main event.",
      ("ceremony_time", "ceremony_venue", "ceremony_address")),
     ("Reception", "Where the celebration continues.",
      ("reception_time", "reception_venue", "reception_address")),
+    ("Seats", "How many places are held for each guest.",
+     ("seats_intro",)),
     ("Lodging", "Hotels, accommodations, travel info.",
      ("lodging_info",)),
     ("Etiquette", "Optional notes for guests.",
-     ("dress_code",)),
+     ("dress_code", "dress_code_intro", "dress_code_ladies",
+      "dress_code_gentlemen", "dress_code_note",
+      "dress_code_inspiration_urls")),
+    ("Gifts", "Where to send a gift, if guests ask.",
+     ("gift_intro", "gift_accounts", "gift_closing")),
     ("Questions & Answers",
      "Answer common guest questions — parking, kids, photos, dress code. "
      "Fill in as many pairs as you need; leave the rest blank.",
