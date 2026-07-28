@@ -66,6 +66,12 @@ msgstr "Cuándo y Dónde"
 msgid "RSVP"
 msgstr "Confirmación"
 
+# The Wildflower Wreath nav row keeps the English terms; the other themes
+# use the translated forms above.
+msgctxt "wildflower nav"
+msgid "RSVP"
+msgstr "RSVP"
+
 msgid "Schedule"
 msgstr "Programa"
 
@@ -138,6 +144,10 @@ msgstr "Confirma antes del"
 msgid "Q&A"
 msgstr "Preguntas"
 
+msgctxt "wildflower nav"
+msgid "Q&A"
+msgstr "Q&A"
+
 msgid "Celebration"
 msgstr "Celebración"
 
@@ -150,8 +160,8 @@ msgstr "Confirma tu Asistencia"
 msgid "Frequently Asked Questions"
 msgstr "Preguntas Frecuentes"
 
-msgid "Our Invitation"
-msgstr "Nuestra Invitación"
+msgid "Invitation"
+msgstr "Invitación"
 
 msgid "Your Seats"
 msgstr "Tus Asientos"

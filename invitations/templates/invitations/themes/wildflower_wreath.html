@@ -154,10 +154,14 @@
 <body class="bg-surface-container-lowest text-on-surface antialiased">
 
   {# --- Sticky nav ------------------------------------------------------ #}
-  {% comment %} Three of these links point at sections that only render when the host
+  {% comment %} Two of these links point at sections that only render when the host
      filled the matching fields in, so each one repeats its section's own
      condition. Keep the pairs in sync: #dress-code with the section at
-     "PAGE 4", #gifts with "PAGE 5a", #faq with "PAGE 5b".
+     "PAGE 4", #faq with "PAGE 5b".
+
+     #gifts has no link on purpose. The block still renders at "PAGE 5a" and is
+     reached by scrolling; it is just kept out of this row, so don't re-add a
+     link for the sake of symmetry.
   {% endcomment %}
   <nav aria-label="{% trans 'Invitation sections' %}"
        class="sticky top-0 z-50 bg-surface-container-lowest/85 backdrop-blur-md border-b border-outline-variant/40">
@@ -177,16 +181,19 @@
                   [scrollbar-width:none] [&::-webkit-scrollbar]:hidden
                   [mask-image:linear-gradient(to_right,black_88%,transparent)]
                   md:mx-0 md:gap-6 md:overflow-x-visible md:px-0 md:[mask-image:none]">
-        <a href="#invitation" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Our Invitation" %}</a>
+        {% comment %} "RSVP" and "Q&A" carry a context marker so this row can keep the
+           English terms in Spanish. The bare msgids are shared with five other
+           themes, which translate them as "Confirmación" and "Preguntas" — in
+           their nav rows and, for RSVP, as a section heading — and those are
+           left as they are.
+        {% endcomment %}
+        <a href="#invitation" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Invitation" %}</a>
         {% if content.dress_code or content.dress_code_intro or content.dress_code_ladies or content.dress_code_gentlemen or content.dress_code_note or content.dress_code_inspiration_urls %}
           <a href="#dress-code" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Dress Code" %}</a>
         {% endif %}
-        {% if content.gift_intro or content.gift_accounts or content.gift_closing %}
-          <a href="#gifts" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Gifts" %}</a>
-        {% endif %}
-        <a href="#rsvp" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "RSVP" %}</a>
+        <a href="#rsvp" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "RSVP" context "wildflower nav" %}</a>
         {% if content|faq_pairs %}
-          <a href="#faq" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Q&A" %}</a>
+          <a href="#faq" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Q&A" context "wildflower nav" %}</a>
         {% endif %}
       </div>
     </div>
