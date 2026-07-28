@@ -260,6 +260,24 @@
      could not spare. The copy below the oval carries its own padding instead.
   {% endcomment %}
   <section id="invitation" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest md:px-margin-desktop py-24 md:py-section-gap">
+    {% comment %} The line that introduces the couple — "junto a nuestras familias" and
+       the like — sits ABOVE the wreath, not inside it. It reads as the opening
+       of the page rather than as part of the names lockup, and inside the oval
+       it was held to the clear interior's 62% (242px at a 390px viewport, for
+       a line set in tracked capitals). Out here it has the full measure at
+       every width and the oval frames the names alone.
+
+       px-margin-mobile because the section deliberately has no horizontal
+       padding below md (see the note on the frame) — same treatment as the
+       details block below the oval.
+    {% endcomment %}
+    {% if content.hero_subtitle %}
+      <p class="wf-balance mx-auto mb-12 max-w-xl px-margin-mobile md:px-0 text-center
+                text-[0.7rem] uppercase tracking-[0.32em] leading-loose text-on-surface-variant">
+        {{ content.hero_subtitle }}
+      </p>
+    {% endif %}
+
     {% comment %}
     Fitting the copy inside the wreath.
 
@@ -276,8 +294,8 @@
     An earlier approach — scaling the artwork to 215% and letting the section
     clip it — put BOTH floral flanks fully off-screen (their inner edges landed
     at x = -42 and x = 432), so the oval read as two unrelated floral bands and
-    the top arc printed straight through the subtitle. So the oval frames the
-    hero lockup alone, complete and unclipped, and the ceremony/reception blocks
+    the top arc printed straight through the top of the copy. So the oval frames
+    the names alone, complete and unclipped, and the ceremony/reception blocks
     follow it in clear space (see _wildflower_details.html). The most
     recognisable half of the printed page survives intact instead of the whole
     of it surviving as a fragment.
@@ -287,8 +305,9 @@
     artwork to be at least 480/0.65 = 738px wide and 795/0.63 = 1262px tall —
     and since the frame holds 612/792, height is the binding constraint, so the
     frame has to be ~1128px wide before the copy clears the florals. Switching
-    at `md` (768px) put the subtitle 87% under painted flowers on every tablet
-    and small laptop, and covered the second View Map button almost entirely.
+    at `md` (768px) put the top of that copy 87% under painted flowers on every
+    tablet and small laptop, and covered the second View Map button almost
+    entirely.
     1280 (`xl`) is the first stock breakpoint past the real crossover.
 
     A host-supplied wreath won't have the same proportions, so this is a
@@ -313,18 +332,13 @@
       wider than the box, which at 320px it was. The h1 opts back out below.
       {% endcomment %}
       <div class="relative z-10 mx-auto w-[62%] min-w-0 max-w-md xl:w-full xl:max-w-[480px] text-center [overflow-wrap:anywhere]">
-        {% if content.hero_subtitle %}
-          <p class="text-[0.7rem] uppercase tracking-[0.32em] leading-loose text-on-surface-variant">
-            {{ content.hero_subtitle }}
-          </p>
-        {% endif %}
-
         {% comment %} The couple, stacked in script. couple_names splits party.name on the
            first "&" / " y " / " and "; with no separator we fall back to one
            line and never show an orphaned ampersand.
         {% endcomment %}
         {% with names=party.name|couple_names %}
-          <h1 class="mt-6 leading-[0.9] [overflow-wrap:normal]">
+          {# No top margin: the names are the first thing inside the oval now. #}
+          <h1 class="leading-[0.9] [overflow-wrap:normal]">
             <span class="font-script block text-tertiary" style="font-size: clamp(2.75rem, 15vw, 8.5rem);">{{ names.first }}</span>
             {% if names.second %}
               {% comment %} -0.3em pulls the second line up into the first line's
@@ -399,6 +413,29 @@
           {% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly confirm your attendance before {{ deadline }}{% endblocktrans %}
         </p>
       {% endif %}
+
+      {% comment %} This is the page that asks the guest to reply, so it carries the
+         control rather than leaving the ask to the nav row: the form is the far
+         side of the dress code and the gifts from here. #rsvp renders
+         unconditionally, so the link needs no guard, and it shows whether or
+         not the host set a deadline above it.
+
+         Filled rather than the outlined View Map pill — it is this page's
+         primary action, and the pill shape keeps it in the same family. The
+         color pair is the gifts block's, for the same reason (see the note
+         there): primary-container/on-primary-container is a fixed family
+         token, so an 11px tracked label stays legible (5.6:1 with the shipped
+         palette) no matter how pale a host's own primary is. Not the banner's
+         leaf green — that is a field color here, not an ink (see --wf-ink-*),
+         and repeating it directly below the banner would read as a second band.
+      {% endcomment %}
+      <a href="#rsvp"
+         class="mt-10 inline-flex min-h-[44px] items-center justify-center rounded-full
+                bg-primary-container text-on-primary-container px-10 text-[0.66rem]
+                font-semibold uppercase tracking-[0.26em] hover:opacity-90
+                transition-opacity">
+        {% trans "Confirm here" %}
+      </a>
     </div>
 
     {# Bottom-left cosmos sprig, radiating up-right out of the corner. #}

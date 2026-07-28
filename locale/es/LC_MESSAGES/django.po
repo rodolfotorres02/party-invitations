@@ -157,6 +157,10 @@ msgstr "Ver Mapa"
 msgid "Confirm Your Attendance"
 msgstr "Confirma tu Asistencia"
 
+# The Wildflower Wreath's seats page — the jump link down to the RSVP form.
+msgid "Confirm here"
+msgstr "Confirma aquí"
+
 msgid "Frequently Asked Questions"
 msgstr "Preguntas Frecuentes"
 
