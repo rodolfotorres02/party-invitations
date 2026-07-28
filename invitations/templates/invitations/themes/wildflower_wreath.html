@@ -4,16 +4,24 @@
   {% include "invitations/themes/_theme_head.html" %}
   {% comment %}
   Wildflower Wreath — a scrolling web translation of the 6-page printed
-  invitation. One <section> per printed page, in order:
+  invitation. One <section> per printed page, in order — except pages 2 and 3,
+  which share one:
 
-    #cover       page 1  · full-bleed olive, tone-on-tone monogram + guest name
-    #invitation  page 2  · white page inside the oval watercolor wreath
-    #seats       page 3  · full-color monogram, seats banner, RSVP deadline
-    #dress-code  page 4  · dress code copy + full-bleed inspiration collage
-    #gifts       page 5a · full-bleed olive gift block
-    #rsvp        --      · shared RSVP form (web-only, no printed equivalent)
-    #faq         page 5b · white Q&A block
-    #closing     page 6  · full-bleed mauve sign-off
+    #cover         page 1  · full-bleed olive, tone-on-tone monogram + guest name
+    #invitation    page 2  · white page inside the oval watercolor wreath
+      └ #seats     page 3  · full-color monogram, seats banner, RSVP deadline
+    #dress-code    page 4  · dress code copy + full-bleed inspiration collage
+    #gifts         page 5a · full-bleed olive gift block
+    #rsvp          --      · shared RSVP form (web-only, no printed equivalent)
+    #faq           page 5b · white Q&A block
+    #closing       page 6  · full-bleed mauve sign-off
+
+  The scrolling page is organised as five parts — greeting, invitation, dress
+  code, gifts, RSVP — with the cover as the greeting. Printed page 3 is not one
+  of them: it closes the invitation instead, below the ceremony and reception
+  details, sharing that section's background and its corner sprig rather than
+  standing as a sixth stop of its own. #seats stays as an anchor on the block,
+  so a link already pointing at it still lands in the right place.
 
   Artwork: the watercolor florals are real illustrations shipped with the app,
   in invitations/static/invitations/wildflower/ — the wreath, the monogram, and
@@ -252,14 +260,19 @@
   </section>
 
   {# ===================================================================== #}
-  {# PAGE 2 — The invitation, set inside the oval watercolor wreath.       #}
+  {# PAGES 2 + 3 — The invitation in its wreath, then the reserved seats.  #}
   {# ===================================================================== #}
   {% comment %} No horizontal padding below md: the wreath frame takes the full viewport
      width so its clear interior — only ~65% of the artwork — is as wide as it
      can be. At 320px the 24px side margins cost the names 30px of measure they
-     could not spare. The copy below the oval carries its own padding instead.
+     could not spare. Every block of copy in here carries its own instead.
+
+     pb-56 on mobile reserves a band for the cosmos sprig at the foot of the
+     section: the printed piece has a full page's margin between the RSVP
+     deadline and those flowers, the scroll layout has none, and without the
+     band they print straight through that line at 390px.
   {% endcomment %}
-  <section id="invitation" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest md:px-margin-desktop py-24 md:py-section-gap">
+  <section id="invitation" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest md:px-margin-desktop pt-24 pb-56 md:py-section-gap">
     {% comment %} The line that introduces the couple — "junto a nuestras familias" and
        the like — sits ABOVE the wreath, not inside it. It reads as the opening
        of the page rather than as part of the names lockup, and inside the oval
@@ -365,20 +378,23 @@
     <div class="xl:hidden mx-auto mt-10 w-full max-w-md px-margin-mobile md:px-0 text-center [overflow-wrap:anywhere]">
       {% include "invitations/themes/_wildflower_details.html" %}
     </div>
-  </section>
 
-  {# ===================================================================== #}
-  {# PAGE 3 — Seats reserved: full-color monogram + leaf-green banner.     #}
-  {# ===================================================================== #}
-  {% comment %} pb-56 on mobile reserves a band for the corner sprig. The printed page has
-     a full page's margin between the RSVP deadline and the cosmos; the scroll
-     layout has none, so without it the flowers print straight through that
-     line at 390px.
-  {% endcomment %}
-  <section id="seats" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest px-margin-mobile md:px-margin-desktop pt-24 pb-56 md:py-section-gap">
-    <h2 class="sr-only">{% trans "Your Seats" %}</h2>
+    {# --- Printed page 3, at the foot of the same section ----------------- #}
+    {% comment %} Seats reserved: full-color monogram + leaf-green banner. Not a section
+       of its own — the page is organised as five parts (see the map at the top
+       of this file) and this is not one of them. It reads as the invitation's
+       closing block, the seats this invitation reserves, so it sits below the
+       ceremony and reception details on the same white ground, separated by
+       one deliberate break instead of by two section paddings, and shares the
+       section's corner sprig rather than carrying a second one.
 
-    <div class="relative z-10 mx-auto w-full max-w-xl text-center">
+       Its own px-margin-mobile, because the section deliberately has none
+       below md. max-w-xl is wider than the details block above it — that is
+       the measure the banner needs to break its two lines like the print.
+    {% endcomment %}
+    <div id="seats" class="relative z-10 scroll-mt-24 mx-auto mt-24 md:mt-section-gap w-full max-w-xl px-margin-mobile md:px-0 text-center">
+      <h2 class="sr-only">{% trans "Your Seats" %}</h2>
+
       {% comment %} The same symbol as the cover, but shown in its own colors here: the
          bundled artwork is already the print's two-tone mark (mauve swash,
          green letter and olive branch), so page 3 just renders the file. Only
@@ -414,14 +430,14 @@
         </p>
       {% endif %}
 
-      {% comment %} This is the page that asks the guest to reply, so it carries the
+      {% comment %} This is the block that asks the guest to reply, so it carries the
          control rather than leaving the ask to the nav row: the form is the far
          side of the dress code and the gifts from here. #rsvp renders
          unconditionally, so the link needs no guard, and it shows whether or
          not the host set a deadline above it.
 
-         Filled rather than the outlined View Map pill — it is this page's
-         primary action, and the pill shape keeps it in the same family. The
+         Filled rather than the outlined View Map pill — it is the primary
+         action here, and the pill shape keeps it in the same family. The
          color pair is the gifts block's, for the same reason (see the note
          there): primary-container/on-primary-container is a fixed family
          token, so an 11px tracked label stays legible (5.6:1 with the shipped
