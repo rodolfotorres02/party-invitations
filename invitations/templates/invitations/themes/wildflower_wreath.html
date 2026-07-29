@@ -59,6 +59,23 @@
   lowercase contrast, so small copy leans on wide tracking and loose leading
   instead of case for hierarchy — that is what makes the printed piece read
   as expensive.
+
+  Motion: the print is read one page at a time; this page hands the guest all
+  six at once. So each block settles into place as it scrolls into view, and the
+  cover plays as a load sequence — monogram, line, the guest's own name, sprig.
+  Two markup hooks carry all of it, and both are inert until the observer in
+  <head> arms them:
+
+    data-wf-reveal="rise|fade|bloom|sprig"   what this element does when it
+                                             arrives (see the motion block at
+                                             the foot of the stylesheet)
+    data-wf-cascade                          on a PARENT: hand its children a
+                                             short repeating delay cycle, so
+                                             siblings arrive in sequence
+
+  Nothing is animated that lays out, so no reveal can shift the page or move an
+  anchor target, and reduced-motion, print and JS-off all get the page with the
+  reveals simply absent.
   {% endcomment %}
   <style>
     :root {
@@ -104,7 +121,8 @@
 
     /* Smooth in-page nav; sections carry scroll-mt-* for the sticky bar.
        Gated, because this page is several thousand pixels tall and animating
-       that distance is exactly what reduced-motion users are opting out of. */
+       that distance is exactly what reduced-motion users are opting out of.
+       The scroll reveal at the foot of this stylesheet is gated the same way. */
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-behavior: smooth; }
     }
@@ -158,7 +176,195 @@
     .wf-collage > figure:nth-child(5n + 3) { aspect-ratio: 4 / 5; }
     .wf-collage > figure:nth-child(5n + 4) { aspect-ratio: 2 / 3; }
     .wf-collage > figure:nth-child(5n + 5) { aspect-ratio: 5 / 6; }
+
+    /* --- Motion: the scroll reveal -------------------------------------
+       The printed piece is read a page at a time, each one turned
+       deliberately. A scrolling translation hands the guest all six at once,
+       so these reveals give the pacing back: every block settles into place as
+       it comes into view, and the cover plays as a load sequence instead —
+       monogram, then the line, then the guest's own name, then the sprig.
+
+       Four rules the whole system is built on:
+
+       · Only opacity and the independent transform properties are animated,
+         never anything that lays out. Nothing here can shift the page — reveal
+         targets keep their box the entire time, so anchor offsets and
+         `scroll-mt-*` still land exactly where they did — and opacity plus
+         transform is the pair a browser can run on the compositor. This page
+         runs to several thousand pixels on a phone and has to stay smooth all
+         the way down it.
+
+       · `translate` / `rotate` / `scale` rather than `transform`, because the
+         sprigs are oriented into their corners with Tailwind's transform
+         utilities (-scale-x-100, rotate-180). The individual properties
+         compose with `transform` instead of overwriting it, so a mirrored
+         sprig can drift in without losing its mirror.
+
+       · Every variant declares a `from` keyframe and nothing else. The
+         implicit `to` is the element's own computed style, so a target
+         carrying opacity-95 (the cover sprig) or opacity-40 (the cosmos wash
+         behind page 2's copy) animates to THAT and not to 1. The reveal layer
+         never has to know, or repeat, any element's resting state.
+
+       · Hiding and revealing are armed by the same thing: the .wf-js class
+         that the script below adds. Nothing is ever hidden that the observer
+         is not there to reveal.
+
+       And the whole block is `screen and no-preference`, so a guest who has
+       asked for reduced motion — and a printed or saved-as-PDF copy, where
+       "scrolled into view" means nothing — gets the page with the reveals
+       simply absent, not with them skipped. */
+    @property --wf-delay { syntax: "<time>"; inherits: false; initial-value: 0ms; }
+    @property --wf-dur   { syntax: "<time>"; inherits: false; initial-value: 900ms; }
+
+    @media screen and (prefers-reduced-motion: no-preference) {
+      /* One tempo for the page. The long duration is the point: this is an
+         engraved invitation, not a product tour. */
+      :root { --wf-ease: cubic-bezier(0.22, 0.61, 0.36, 1); }
+
+      /* Held until the observer marks it in. */
+      .wf-js [data-wf-reveal]:not(.wf-in) { opacity: 0; }
+
+      @keyframes wf-rise  { from { opacity: 0; translate: 0 1.25rem; } }
+      @keyframes wf-fade  { from { opacity: 0; } }
+      @keyframes wf-bloom { from { opacity: 0; scale: 1.04; } }
+      /* Corner-aware: --wf-dx / --wf-dy / --wf-dr are set per section in the
+         sprig table below, so each cluster drifts in off the edge it bleeds
+         over rather than all four arriving from the same direction. */
+      @keyframes wf-drift {
+        from { opacity: 0; translate: var(--wf-dx, 0) var(--wf-dy, 1.25rem); rotate: var(--wf-dr, 0deg); }
+      }
+
+      /* Both custom properties carry a literal fallback as well as an @property
+         initial value. The registration is there for `inherits: false`; the
+         fallback is what keeps the reveals running on an engine with no
+         @property support, where an unset var() would otherwise invalidate the
+         declaration and drop the animation altogether. */
+      .wf-js [data-wf-reveal].wf-in {
+        animation-duration: var(--wf-dur, 900ms);
+        animation-timing-function: var(--wf-ease);
+        animation-delay: var(--wf-delay, 0ms);
+        /* `backwards` and not `both`. Backwards is the half that is needed: a
+           target still waiting out its delay holds the from-state instead of
+           showing itself and then animating in. Filling forwards as well would
+           leave every one of the ~40 targets pinned to an animated
+           `translate: 0px` / `scale: 1` for the rest of the page's life, which
+           is a composited layer and a containing block each, for no visual
+           difference — the implicit `to` IS the resting style, so there is
+           nothing to hold on to once the animation is done. */
+        animation-fill-mode: backwards;
+      }
+      .wf-js [data-wf-reveal="rise"].wf-in  { animation-name: wf-rise; }
+      .wf-js [data-wf-reveal="fade"].wf-in  { animation-name: wf-fade; }
+      /* The watercolor artwork blooms rather than travels: slower, and
+         settling out of a slight overscale, the way a wash spreads. */
+      .wf-js [data-wf-reveal="bloom"].wf-in { animation-name: wf-bloom; --wf-dur: 1500ms; }
+      .wf-js [data-wf-reveal="sprig"].wf-in { animation-name: wf-drift; --wf-dur: 1400ms; }
+
+      /* A cascade container hands its children a repeating delay cycle, so a
+         group of siblings that cross the threshold in the same frame arrives
+         in sequence rather than in unison. The cycle repeats every three
+         instead of accumulating: the dress-code collage can hold dozens of
+         tiles and the last of them must not sit waiting for its turn.
+
+         The 3n + 1 beat is declared too, at 0ms, rather than left to the
+         initial value — @property keeps --wf-delay from inheriting, but on an
+         engine without @property support that baseline is what stops a nested
+         target from waiting out its parent's beat as well as its own. */
+      .wf-js [data-wf-cascade] > *                   { --wf-delay: 0ms; }
+      .wf-js [data-wf-cascade] > *:nth-child(3n + 2) { --wf-delay: 110ms; }
+      .wf-js [data-wf-cascade] > *:nth-child(3n + 3) { --wf-delay: 220ms; }
+
+      /* The cover is a load sequence, so its beats are longer than a cascade's
+         and set here rather than left to sibling order. The guest's name lands
+         at ~0.5s and is fully in at ~1.4s: the beat a printed cover is opened
+         on, slow enough to read as the page arriving rather than as a
+         transition finishing.
+
+         Keyed on :nth-child, not one delay per element, so that when a host
+         leaves cover_intro blank the name inherits the FIRST beat instead of
+         waiting for a line that was never rendered. */
+      .wf-js #cover [data-wf-reveal="rise"]:nth-child(1) { --wf-delay: 340ms; }
+      .wf-js #cover [data-wf-reveal="rise"]:nth-child(2) { --wf-delay: 540ms; }
+
+      /* Page 2: the wreath blooms first and the names follow it into the
+         frame, one line and then the other — the nested lockup, drawn in the
+         order it reads. */
+      .wf-js #invitation h1 > *                { --wf-delay: 260ms; }
+      .wf-js #invitation h1 > *:nth-child(2)   { --wf-delay: 420ms; }
+
+      /* Sprig choreography, one row per corner the print hangs a cluster in.
+         Positive x/y start the cluster below and to the right of where it
+         comes to rest, so the sign of each pair points back at its own corner:
+         the cover's fans in from the bottom-right, the gifts block's hangs
+         down out of the top-right, and the two mirrored ones come in from the
+         left. Each waits for its section's copy — except the cover, whose
+         sprig closes the load sequence. */
+      .wf-js #cover      [data-wf-reveal="sprig"] { --wf-dx:  1.25rem; --wf-dr:  2deg; --wf-delay: 780ms; }
+      .wf-js #invitation [data-wf-reveal="sprig"] { --wf-dx: -1.25rem; --wf-dr: -2deg; --wf-delay: 240ms; }
+      .wf-js #gifts      [data-wf-reveal="sprig"] { --wf-dx:  1.25rem; --wf-dy: -1.25rem; --wf-dr: 2deg; --wf-delay: 200ms; }
+      .wf-js #closing    [data-wf-reveal="sprig"] { --wf-dx: -1.25rem; --wf-dr: -2deg; --wf-delay: 320ms; }
+    }
   </style>
+
+  {% comment %}
+  The reveal observer.
+
+  In <head> and not at the foot of <body>, and it is the same script that adds
+  `wf-js`: that class is what arms the hidden state in the stylesheet above, so
+  hiding and revealing cannot come apart. A guest with JavaScript off, or
+  behind something that strips it, gets the whole invitation rendered plainly
+  rather than a blank page — and running before the body is painted is also
+  what keeps the reveal targets from flashing in and back out.
+
+  No library: the entire behaviour is "add a class when a target scrolls into
+  view, then stop watching it". Anything more would be a second blocking
+  download on a page a guest opens once, on a phone, probably on data.
+
+  Two details worth keeping:
+
+  · The bottom edge of the root is pulled in by 10% of the viewport, so a block
+    starts its reveal just after it has properly crossed into view rather than
+    the instant its first pixel does.
+
+  · Targets are unobserved as they reveal, but only then. _wildflower_details.html
+    is rendered twice and whichever copy this breakpoint isn't using is
+    display:none, which reports no intersection at all: it simply stays
+    observed, so a window resized across `xl` reveals the copy it switches to
+    instead of finding it stuck at zero.
+  {% endcomment %}
+  <script>
+    (function () {
+      function revealAll(targets) {
+        for (var i = 0; i < targets.length; i++) targets[i].classList.add("wf-in");
+      }
+
+      function init() {
+        var targets = document.querySelectorAll("[data-wf-reveal]");
+        try {
+          if (!("IntersectionObserver" in window)) return revealAll(targets);
+          var io = new IntersectionObserver(function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+              if (!entries[i].isIntersecting) continue;
+              entries[i].target.classList.add("wf-in");
+              io.unobserve(entries[i].target);
+            }
+          }, { rootMargin: "0px 0px -10% 0px" });
+          for (var i = 0; i < targets.length; i++) io.observe(targets[i]);
+        } catch (e) {
+          // Whatever failed, the guest still gets the whole invitation.
+          revealAll(targets);
+        }
+      }
+
+      document.documentElement.classList.add("wf-js");
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
 </head>
 <body class="bg-surface-container-lowest text-on-surface antialiased">
 
@@ -171,6 +377,12 @@
      #gifts has no link on purpose. The block still renders at "PAGE 5a" and is
      reached by scrolling; it is just kept out of this row, so don't re-add a
      link for the sake of symmetry.
+
+     The nav itself never fades in: it is the only control on the page and the
+     first screen's one affordance for scrolling, so it is there from the first
+     paint. Its links (and the View Map buttons) carry duration-300 rather than
+     Tailwind's default 150ms, to hover at the same unhurried tempo the reveals
+     move at.
   {% endcomment %}
   <nav aria-label="{% trans 'Invitation sections' %}"
        class="sticky top-0 z-50 bg-surface-container-lowest/85 backdrop-blur-md border-b border-outline-variant/40">
@@ -196,13 +408,13 @@
            their nav rows and, for RSVP, as a section heading — and those are
            left as they are.
         {% endcomment %}
-        <a href="#invitation" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Invitation" %}</a>
+        <a href="#invitation" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors duration-300">{% trans "Invitation" %}</a>
         {% if content.dress_code or content.dress_code_intro or content.dress_code_ladies or content.dress_code_gentlemen or content.dress_code_note or content.dress_code_inspiration_urls %}
-          <a href="#dress-code" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Dress Code" %}</a>
+          <a href="#dress-code" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors duration-300">{% trans "Dress Code" %}</a>
         {% endif %}
-        <a href="#rsvp" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "RSVP" context "wildflower nav" %}</a>
+        <a href="#rsvp" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors duration-300">{% trans "RSVP" context "wildflower nav" %}</a>
         {% if content|faq_pairs %}
-          <a href="#faq" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors">{% trans "Q&A" context "wildflower nav" %}</a>
+          <a href="#faq" class="shrink-0 inline-flex min-h-[44px] items-center hover:text-primary transition-colors duration-300">{% trans "Q&A" context "wildflower nav" %}</a>
         {% endif %}
       </div>
     </div>
@@ -230,27 +442,36 @@
     {% comment %} Monogram, tone-on-tone: the bundled artwork is used as a mask over
        pale sage, so it sits barely above the olive field exactly as in the
        print. A host's own monogram is shown as-is — see the note at the top.
+
+       `bloom` on both branches fades the monogram up out of a slight
+       overscale. Because the reveal animates towards the element's own computed
+       style rather than towards 1, the opacity-90 that tone-on-tone treatment
+       needs survives it either way.
     {% endcomment %}
     {% if content.monogram_image_url %}
       {% comment %} aspect-[421/500] matches .wf-mono-tint so a host's file reserves the
          same box as the bundled one and neither shifts the cover on load.
       {% endcomment %}
-      <img src="{{ content.monogram_image_url }}" alt=""
+      <img src="{{ content.monogram_image_url }}" alt="" data-wf-reveal="bloom"
            class="w-[46vw] max-w-[240px] h-auto aspect-[421/500] object-contain opacity-90"
            loading="lazy" decoding="async">
     {% else %}
-      <div class="w-[46vw] max-w-[240px] opacity-90 wf-mono-tint" aria-hidden="true"
+      <div class="w-[46vw] max-w-[240px] opacity-90 wf-mono-tint" aria-hidden="true" data-wf-reveal="bloom"
            style="--wf-mono-src: url('{% static 'invitations/wildflower/monogram.webp' %}');"></div>
     {% endif %}
 
+    {% comment %} The two lines' reveal delays are keyed on their position in here — see
+       the #cover block in the stylesheet — so the name takes the first beat
+       when a host leaves cover_intro blank.
+    {% endcomment %}
     <div class="relative z-10 mt-20 md:mt-28 max-w-xl">
       {% if content.cover_intro %}
         {# Cream, not sage: see --wf-leaf-cream. This line is a web-only addition. #}
-        <p class="text-[0.66rem] uppercase tracking-[0.4em] leading-loose" style="color: var(--wf-leaf-cream);">
+        <p class="text-[0.66rem] uppercase tracking-[0.4em] leading-loose" data-wf-reveal="rise" style="color: var(--wf-leaf-cream);">
           {{ content.cover_intro }}
         </p>
       {% endif %}
-      <p class="wf-balance font-script mt-6 leading-[1.15]"
+      <p class="wf-balance font-script mt-6 leading-[1.15]" data-wf-reveal="rise"
          style="color: var(--wf-leaf-pale); font-size: clamp(2.75rem, 11vw, 5.5rem);">
         {{ invitation.label }}
       </p>
@@ -290,7 +511,8 @@
     {% endcomment %}
     {% if content.hero_subtitle %}
       <p class="wf-balance mx-auto mb-12 max-w-xl px-margin-mobile md:px-0 text-center
-                text-[0.7rem] uppercase tracking-[0.32em] leading-loose text-on-surface-variant">
+                text-[0.7rem] uppercase tracking-[0.32em] leading-loose text-on-surface-variant"
+         data-wf-reveal="rise">
         {{ content.hero_subtitle }}
       </p>
     {% endif %}
@@ -333,8 +555,13 @@
     {% endcomment %}
     <div class="relative mx-auto flex w-full max-w-[440px] items-center justify-center
                 aspect-[612/792] md:max-w-[560px] xl:max-w-[1100px]">
+        {% comment %} The frame blooms in first and the names follow it — the artwork is
+           painted, so it settles out of a slight overscale rather than
+           travelling. The overscale is clipped by the section, not laid out, so
+           it cannot nudge the names it frames.
+        {% endcomment %}
         <img src="{% if content.wreath_image_url %}{{ content.wreath_image_url }}{% else %}{% static 'invitations/wildflower/wreath.webp' %}{% endif %}"
-             alt="" aria-hidden="true" decoding="async" loading="lazy"
+             alt="" aria-hidden="true" decoding="async" loading="lazy" data-wf-reveal="bloom"
              class="pointer-events-none select-none absolute inset-0 h-full w-full object-contain">
 
       {% comment %}
@@ -356,12 +583,12 @@
         {% with names=party.name|couple_names %}
           {# No top margin: the names are the first thing inside the oval now. #}
           <h1 class="leading-[0.9] [overflow-wrap:normal]">
-            <span class="font-script block text-tertiary" style="font-size: clamp(2.75rem, 15vw, 8.5rem);">{{ names.first }}</span>
+            <span class="font-script block text-tertiary" data-wf-reveal="rise" style="font-size: clamp(2.75rem, 15vw, 8.5rem);">{{ names.first }}</span>
             {% if names.second %}
               {% comment %} -0.3em pulls the second line up into the first line's
                  descenders, the nested lockup used in the print piece.
               {% endcomment %}
-              <span class="font-script block -mt-[0.3em]" style="font-size: clamp(2.75rem, 15vw, 8.5rem);">
+              <span class="font-script block -mt-[0.3em]" data-wf-reveal="rise" style="font-size: clamp(2.75rem, 15vw, 8.5rem);">
                 <span class="text-secondary pr-[0.06em]">{{ names.separator }}</span><span class="text-tertiary">{{ names.second }}</span>
               </span>
             {% endif %}
@@ -372,7 +599,12 @@
            once the frame is actually big enough to hold it (see the breakpoint
            arithmetic above, and the note atop _wildflower_details.html).
         {% endcomment %}
-        <div class="hidden xl:block">
+        {% comment %} data-wf-cascade on the wrapper rather than a delay per block inside the
+           partial: the partial is included twice and its blocks are
+           conditional, so the beat belongs to sibling order, not to any one
+           field. Same on the narrow-screen copy below.
+        {% endcomment %}
+        <div class="hidden xl:block" data-wf-cascade>
           {% include "invitations/themes/_wildflower_details.html" %}
         </div>
       </div>
@@ -385,7 +617,8 @@
        without it the flowers would sit ON the ceremony details rather than
        behind them.
     {% endcomment %}
-    <div class="relative z-10 xl:hidden mx-auto mt-10 w-full max-w-md px-margin-mobile md:px-0 text-center [overflow-wrap:anywhere]">
+    <div class="relative z-10 xl:hidden mx-auto mt-10 w-full max-w-md px-margin-mobile md:px-0 text-center [overflow-wrap:anywhere]"
+         data-wf-cascade>
       {% include "invitations/themes/_wildflower_details.html" %}
     </div>
 
@@ -410,8 +643,9 @@
        code. One cluster carries the corner; this section starts on its copy.
     {% endcomment %}
     <section id="dress-code" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest py-24 md:py-section-gap">
-      <div class="relative z-10 mx-auto w-full max-w-2xl px-margin-mobile md:px-margin-desktop text-center">
-        <h2 class="text-[0.7rem] uppercase tracking-[0.34em]" style="color: var(--wf-ink-mauve);">{% trans "Dress Code" %}</h2>
+      <div class="relative z-10 mx-auto w-full max-w-2xl px-margin-mobile md:px-margin-desktop text-center"
+           data-wf-cascade>
+        <h2 class="text-[0.7rem] uppercase tracking-[0.34em]" data-wf-reveal="rise" style="color: var(--wf-ink-mauve);">{% trans "Dress Code" %}</h2>
         {% if content.dress_code %}
           {% comment %}
           Deliberately modest: in the print this line is set only a little
@@ -419,11 +653,11 @@
           heading. It also has to survive a host writing a whole sentence
           here rather than a two-word code.
           {% endcomment %}
-          <p class="wf-balance mt-3 text-base md:text-lg font-semibold uppercase leading-[1.7] tracking-[0.18em]" style="color: var(--wf-ink-mauve);">{{ content.dress_code }}</p>
+          <p class="wf-balance mt-3 text-base md:text-lg font-semibold uppercase leading-[1.7] tracking-[0.18em]" data-wf-reveal="rise" style="color: var(--wf-ink-mauve);">{{ content.dress_code }}</p>
         {% endif %}
 
         {% if content.dress_code_intro %}
-          <p class="wf-balance mt-6 text-sm leading-[2] tracking-[0.15em] text-on-surface">
+          <p class="wf-balance mt-6 text-sm leading-[2] tracking-[0.15em] text-on-surface" data-wf-reveal="rise">
             {{ content.dress_code_intro|linebreaksbr }}
           </p>
         {% endif %}
@@ -433,15 +667,15 @@
            mauve rule down the side of the note read as a web callout box and
            broke the page's quiet, symmetrical voice.
         {% endcomment %}
-        <div class="mt-12 space-y-10">
+        <div class="mt-12 space-y-10" data-wf-cascade>
           {% if content.dress_code_ladies %}
-            <div>
+            <div data-wf-reveal="rise">
               <h3 class="text-[0.72rem] font-semibold uppercase tracking-[0.28em]" style="color: var(--wf-ink-leaf);">{% trans "For the ladies" %}</h3>
               <p class="wf-balance mt-3 text-sm leading-[2] tracking-[0.13em] text-on-surface">{{ content.dress_code_ladies|linebreaksbr }}</p>
             </div>
           {% endif %}
           {% if content.dress_code_gentlemen %}
-            <div>
+            <div data-wf-reveal="rise">
               <h3 class="text-[0.72rem] font-semibold uppercase tracking-[0.28em]" style="color: var(--wf-ink-leaf);">{% trans "For the gentlemen" %}</h3>
               <p class="wf-balance mt-3 text-sm leading-[2] tracking-[0.13em] text-on-surface">{{ content.dress_code_gentlemen|linebreaksbr }}</p>
             </div>
@@ -450,7 +684,7 @@
             {% comment %} "Nota Importante:" is an inline lead-in inside the paragraph in the
                print, not a heading over it — same size, same ink, just bold.
             {% endcomment %}
-            <p class="wf-balance text-sm leading-[2] tracking-[0.13em] text-on-surface">
+            <p class="wf-balance text-sm leading-[2] tracking-[0.13em] text-on-surface" data-wf-reveal="rise">
               <strong class="font-semibold" style="color: var(--wf-ink-mauve);">{% trans "Please note" %}:</strong>
               {{ content.dress_code_note|linebreaksbr }}
             </p>
@@ -461,7 +695,8 @@
       {# Inspiration collage — heading and all, only when there are URLs. #}
       {% with shots=content.dress_code_inspiration_urls|url_list %}
         {% if shots %}
-          <h3 class="relative z-10 mx-auto mt-14 max-w-2xl px-margin-mobile text-center text-[0.7rem] uppercase tracking-[0.28em] text-on-surface-variant">
+          <h3 class="relative z-10 mx-auto mt-14 max-w-2xl px-margin-mobile text-center text-[0.7rem] uppercase tracking-[0.28em] text-on-surface-variant"
+              data-wf-reveal="rise">
             {% trans "A few ideas for inspiration" %}
           </h3>
           {% comment %} Full-bleed: this div deliberately sits outside the padded measure
@@ -472,10 +707,17 @@
              than the heading followed by silence. There is no per-image caption
              to work from, so the label is positional.
           {% endcomment %}
-          <div class="wf-collage mt-8 w-full" role="list"
+          {% comment %} Each tile reveals on its own, so a mosaic that can run past the fold
+             arrives as the guest scrolls it rather than in one wave. A fade and
+             nothing else: the collage is deliberately gapless, and a tile that
+             travelled would open a hairline seam against its neighbours for as
+             long as it moved. data-wf-cascade offsets every third tile so a row
+             that crosses the threshold together still scatters in.
+          {% endcomment %}
+          <div class="wf-collage mt-8 w-full" role="list" data-wf-cascade
                aria-label="{% trans 'A few ideas for inspiration' %}">
             {% for url in shots %}
-              <figure role="listitem">
+              <figure role="listitem" data-wf-reveal="fade">
                 <img src="{{ url }}" loading="lazy" decoding="async"
                      alt="{% blocktrans with n=forloop.counter %}Dress code inspiration {{ n }}{% endblocktrans %}">
               </figure>
@@ -509,12 +751,12 @@
          the text isn't available here — a pale sprig at 40% would disappear
          into the field rather than sit under it.
       {% endcomment %}
-      <div class="relative z-10 mx-auto w-full max-w-2xl pt-20 md:pt-0">
+      <div class="relative z-10 mx-auto w-full max-w-2xl pt-20 md:pt-0" data-wf-cascade>
         {# Full opacity: at /70 this 11px line sat at 3.70:1 on the olive. #}
-        <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-on-primary-container">{% trans "Gifts" %}</h2>
+        <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-on-primary-container" data-wf-reveal="rise">{% trans "Gifts" %}</h2>
 
         {% if content.gift_intro %}
-          <p class="mt-6 text-sm leading-[2.1] tracking-[0.14em]">{{ content.gift_intro|linebreaksbr }}</p>
+          <p class="mt-6 text-sm leading-[2.1] tracking-[0.14em]" data-wf-reveal="rise">{{ content.gift_intro|linebreaksbr }}</p>
         {% endif %}
 
         {% with blocks=content.gift_accounts|detail_blocks %}
@@ -529,9 +771,11 @@
                overflow-wrap is load-bearing here: this section is overflow-hidden
                and an IBAN is long enough to be silently clipped at 320px.
             {% endcomment %}
-            <div class="mt-10 space-y-6 text-[0.85rem] leading-[2] tracking-[0.12em] [overflow-wrap:anywhere]">
+            {# One beat per account block, so a stack of three arrives in order. #}
+            <div class="mt-10 space-y-6 text-[0.85rem] leading-[2] tracking-[0.12em] [overflow-wrap:anywhere]"
+                 data-wf-cascade>
               {% for rows in blocks %}
-                <dl>
+                <dl data-wf-reveal="rise">
                   {% for row in rows %}
                     <div>
                       {% if row.label %}<dt class="inline">{{ row.label }}:</dt> {% endif %}
@@ -546,7 +790,7 @@
 
         {# A plain sentence in the print — no rule above it, not uppercased. #}
         {% if content.gift_closing %}
-          <p class="mt-10 text-sm leading-[2.1] tracking-[0.14em]">{{ content.gift_closing }}</p>
+          <p class="mt-10 text-sm leading-[2.1] tracking-[0.14em]" data-wf-reveal="rise">{{ content.gift_closing }}</p>
         {% endif %}
       </div>
     </section>
@@ -555,11 +799,23 @@
   {# ===================================================================== #}
   {# RSVP — no printed equivalent; the web page's reason to exist.         #}
   {# ===================================================================== #}
-  <section id="rsvp" class="scroll-mt-24 bg-surface-container-lowest px-margin-mobile md:px-margin-desktop py-24 md:py-section-gap">
-    <h2 class="text-center text-lg md:text-2xl font-semibold uppercase tracking-[0.24em] mb-12" style="color: var(--wf-ink-mauve);">
+  {% comment %} The form is wrapped rather than reached into: _rsvp_form.html is shared with
+     six other themes and knows nothing about this one's reveal system.
+
+     This is also the section that most depends on the reveal never touching
+     layout. A guest arrives here from the RSVP redirect, which comes back to
+     `#rsvp`, and the browser makes that jump before the observer has run — so a
+     block still waiting to be revealed has to already occupy its final box, or
+     the jump lands somewhere else.
+  {% endcomment %}
+  <section id="rsvp" class="scroll-mt-24 bg-surface-container-lowest px-margin-mobile md:px-margin-desktop py-24 md:py-section-gap"
+           data-wf-cascade>
+    <h2 class="text-center text-lg md:text-2xl font-semibold uppercase tracking-[0.24em] mb-12" data-wf-reveal="rise" style="color: var(--wf-ink-mauve);">
       {% trans "Confirm Your Attendance" %}
     </h2>
-    {% include "invitations/themes/_rsvp_form.html" %}
+    <div data-wf-reveal="rise">
+      {% include "invitations/themes/_rsvp_form.html" %}
+    </div>
   </section>
 
   {# ===================================================================== #}
@@ -569,12 +825,13 @@
     {% if faq_items %}
       <section id="faq" class="scroll-mt-24 bg-surface-container-lowest px-margin-mobile md:px-margin-desktop pb-24 md:pb-section-gap">
         <div class="mx-auto w-full max-w-2xl">
-          <h2 class="text-[0.72rem] font-semibold uppercase tracking-[0.3em]" style="color: var(--wf-ink-mauve);">
+          <h2 class="text-[0.72rem] font-semibold uppercase tracking-[0.3em]" data-wf-reveal="rise" style="color: var(--wf-ink-mauve);">
             {% trans "Frequently Asked Questions" %}
           </h2>
-          <div class="mt-10 space-y-10">
+          {# Question and answer rise together — one block per pair, not per line. #}
+          <div class="mt-10 space-y-10" data-wf-cascade>
             {% for item in faq_items %}
-              <div>
+              <div data-wf-reveal="rise">
                 <h3 class="text-[0.78rem] font-semibold uppercase leading-[1.9] tracking-[0.18em]" style="color: var(--wf-ink-leaf);">{{ item.question }}</h3>
                 {% if item.answer %}
                   <p class="mt-2 text-sm leading-[2.1] tracking-[0.12em] text-on-surface">{{ item.answer|linebreaksbr }}</p>
@@ -600,10 +857,16 @@
      3.18:1 at /85) — that is the ceiling this background allows, and the
      background is the print's own colour.
   {% endcomment %}
-  <footer id="closing" class="relative overflow-hidden bg-secondary text-on-secondary px-margin-mobile pt-28 pb-56 md:py-section-gap text-center">
+  {% comment %} The sr-only heading is left out of the reveal deliberately: it is the first
+     child, so it holds the cascade's first beat and lets the names and the date
+     — the two lines a sighted guest actually sees here — take the second and
+     third. Fading something invisible would only have cost a beat.
+  {% endcomment %}
+  <footer id="closing" class="relative overflow-hidden bg-secondary text-on-secondary px-margin-mobile pt-28 pb-56 md:py-section-gap text-center"
+          data-wf-cascade>
     <h2 class="sr-only">{% trans "With love" %}</h2>
-    <p class="wf-balance font-script leading-[1.1]" style="font-size: clamp(2.5rem, 12vw, 5rem);">{{ party.name }}</p>
-    <p class="mt-6 text-[0.66rem] uppercase tracking-[0.36em]">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
+    <p class="wf-balance font-script leading-[1.1]" data-wf-reveal="rise" style="font-size: clamp(2.5rem, 12vw, 5rem);">{{ party.name }}</p>
+    <p class="mt-6 text-[0.66rem] uppercase tracking-[0.36em]" data-wf-reveal="rise">{{ party.starts_at|date:"DATE_FORMAT" }}</p>
 
     {% comment %}
     Page 6 reuses the cover's waxflower cluster, mirrored into the BOTTOM-LEFT

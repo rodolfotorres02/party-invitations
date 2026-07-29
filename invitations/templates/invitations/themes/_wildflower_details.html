@@ -22,15 +22,21 @@ both.
 The print labels only "RECEPCIÓN" — the ceremony detail there runs on from the
 invitation sentence above it with no heading of its own. That asymmetry is
 reproduced deliberately.
+
+Each of the three blocks reveals as one unit, and the beat between them comes
+from the data-wf-cascade on whichever wrapper included this file — see the note
+there. Blocks, not lines: the ceremony detail is a date, a time, a venue and an
+address that read as a single stanza, and animating those four lines separately
+would turn a lockup into a list.
 {% endcomment %}
 {% if content.invite_body %}
-  <p class="wf-balance text-sm leading-[2] tracking-[0.16em] text-on-surface">
+  <p class="wf-balance text-sm leading-[2] tracking-[0.16em] text-on-surface" data-wf-reveal="rise">
     {{ content.invite_body|linebreaksbr }}
   </p>
 {% endif %}
 
 {# Ceremony — deliberately unlabelled, as in the print. #}
-<div class="mt-12">
+<div class="mt-12" data-wf-reveal="rise">
   <div class="space-y-1.5 text-[0.8rem] leading-[2] tracking-[0.15em] text-on-surface">
     <p>{{ party.starts_at|date:"DATE_FORMAT" }}</p>
     {% if content.ceremony_time %}<p>{{ content.ceremony_time }}</p>{% endif %}
@@ -40,14 +46,14 @@ reproduced deliberately.
   {% if content.ceremony_address %}
     <a href="https://www.google.com/maps/search/?api=1&query={{ content.ceremony_address|urlencode }}"
        target="_blank" rel="noopener"
-       class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors">
+       class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors duration-300">
       {% trans "View Map" %}
     </a>
   {% endif %}
 </div>
 
 {% if content.reception_time or content.reception_venue or content.reception_address %}
-  <div class="mt-12">
+  <div class="mt-12" data-wf-reveal="rise">
     <h2 class="text-[0.7rem] uppercase tracking-[0.34em]" style="color: var(--wf-ink-leaf);">{% trans "Reception" %}</h2>
     <div class="mt-4 space-y-1.5 text-[0.8rem] leading-[2] tracking-[0.15em] text-on-surface">
       {% if content.reception_time %}<p>{{ content.reception_time }}</p>{% endif %}
@@ -57,7 +63,7 @@ reproduced deliberately.
     {% if content.reception_address %}
       <a href="https://www.google.com/maps/search/?api=1&query={{ content.reception_address|urlencode }}"
          target="_blank" rel="noopener"
-         class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors">
+         class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors duration-300">
         {% trans "View Map" %}
       </a>
     {% endif %}
