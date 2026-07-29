@@ -19,7 +19,15 @@ mirrored with -scale-x-100, and a top corner hangs with rotate-180.
 `content.sprig_image_url` overrides every sprig on the page at once — the host
 gets one slot rather than four, so the same image lands in each corner and the
 per-corner transform still orients it correctly.
+
+Every sprig drifts into its corner on reveal — the attribute is hardcoded here
+rather than passed in, because all four want it and this partial has exactly one
+caller. Which direction each drifts in from, and how long after its section's
+copy, is set per section in the sprig table in wildflower_wreath.html; the
+reveal animates `translate` / `rotate`, so it composes with the flip or rotation
+in `classes` instead of overwriting it.
 {% endcomment %}
 <img src="{% if content.sprig_image_url %}{{ content.sprig_image_url }}{% else %}{% static asset %}{% endif %}"
      alt="" aria-hidden="true" loading="{{ loading|default:'lazy' }}" decoding="async"
+     data-wf-reveal="sprig"
      class="pointer-events-none select-none {{ classes }}">
