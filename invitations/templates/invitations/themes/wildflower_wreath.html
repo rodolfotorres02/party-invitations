@@ -268,12 +268,15 @@
      can be. At 320px the 24px side margins cost the names 30px of measure they
      could not spare. Every block of copy in here carries its own instead.
 
-     pb-56 on mobile reserves a band for the cosmos sprig at the foot of the
-     section: the printed piece has a full page's margin between its last line
-     of copy and those flowers, the scroll layout has none, and without the
-     band they print straight through the details block at 390px.
+     The cosmos sprig at the foot of the section is a BACKGROUND, not a band of
+     its own: it sits behind the copy at low opacity rather than in reserved
+     clear space below it. An earlier pb-56 held a 224px band open for it on
+     mobile so it could print at full strength, which read as a hole in the
+     page — the printed piece can afford that margin, a scroll cannot. So the
+     padding is the section's ordinary pt-24/pb-24 and the flowers wash in
+     underneath.
   {% endcomment %}
-  <section id="invitation" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest md:px-margin-desktop pt-24 pb-56 md:py-section-gap">
+  <section id="invitation" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest md:px-margin-desktop py-24 md:py-section-gap">
     {% comment %} The line that introduces the couple — "junto a nuestras familias" and
        the like — sits ABOVE the wreath, not inside it. It reads as the opening
        of the page rather than as part of the names lockup, and inside the oval
@@ -375,27 +378,38 @@
       </div>
     </div>
 
-    {# …and the same blocks below the oval, everywhere narrower. #}
-    <div class="xl:hidden mx-auto mt-10 w-full max-w-md px-margin-mobile md:px-0 text-center [overflow-wrap:anywhere]">
+    {% comment %} …and the same blocks below the oval, everywhere narrower.
+
+       relative z-10 lifts this copy over the corner sprig below: an absolutely
+       positioned image paints above in-flow content that isn't positioned, so
+       without it the flowers would sit ON the ceremony details rather than
+       behind them.
+    {% endcomment %}
+    <div class="relative z-10 xl:hidden mx-auto mt-10 w-full max-w-md px-margin-mobile md:px-0 text-center [overflow-wrap:anywhere]">
       {% include "invitations/themes/_wildflower_details.html" %}
     </div>
 
-    {# Bottom-left cosmos sprig, radiating up-right out of the corner. #}
-    {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-cosmos.webp" classes="absolute -bottom-6 -left-4 md:-left-8 h-[200px] md:h-[300px] w-auto -scale-x-100" %}
+    {% comment %} Bottom-left cosmos sprig, radiating up-right out of the corner — the one
+       sprig on the page that runs UNDER its section's copy instead of beside
+       it, so it is dropped to 40% and to z-0. Full strength behind 11px tracked
+       capitals is unreadable; at 40% on this near-white surface it reads as a
+       watercolor wash on the paper, which is the job it does in the print.
+    {% endcomment %}
+    {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-cosmos.webp" classes="absolute z-0 -bottom-6 -left-4 md:-left-8 h-[200px] md:h-[300px] w-auto -scale-x-100 opacity-40" %}
   </section>
 
   {# ===================================================================== #}
   {# PAGE 4 — Dress code + inspiration collage.                            #}
   {# ===================================================================== #}
   {% if content.dress_code or content.dress_code_intro or content.dress_code_ladies or content.dress_code_gentlemen or content.dress_code_note or content.dress_code_inspiration_urls %}
-    {% comment %} pt-48 on mobile clears the top-left sprig, which otherwise prints through
-       the dress-code heading and the code itself. The printed page has a page
-       margin doing this job.
+    {% comment %} No sprig at the top-left here, and so no pt-48 to clear one. This section
+       opens directly under the invitation's own bottom-left sprig, and on
+       mobile the two stacked into a single column of flowers down the left
+       edge with a 224px band above and a 192px band below them — most of a
+       phone screen of florals between the last View Map button and the dress
+       code. One cluster carries the corner; this section starts on its copy.
     {% endcomment %}
-    <section id="dress-code" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest pt-48 pb-24 md:py-section-gap">
-      {# Top-left sprig, hanging down-right into the page. #}
-      {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-snapdragon.webp" classes="absolute -top-6 -left-4 md:-left-8 h-[170px] md:h-[260px] w-auto rotate-180" %}
-
+    <section id="dress-code" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest py-24 md:py-section-gap">
       <div class="relative z-10 mx-auto w-full max-w-2xl px-margin-mobile md:px-margin-desktop text-center">
         <h2 class="text-[0.7rem] uppercase tracking-[0.34em]" style="color: var(--wf-ink-mauve);">{% trans "Dress Code" %}</h2>
         {% if content.dress_code %}
@@ -490,8 +504,10 @@
       {% endcomment %}
       {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-waxflower.webp" classes="absolute -top-8 -right-4 md:-right-8 h-[180px] md:h-[280px] w-auto opacity-95 rotate-180" %}
 
-      {% comment %} pt-20 on mobile keeps the copy clear of that sprig, the same job the
-         dress-code section's pt-48 does for its own.
+      {% comment %} pt-20 on mobile keeps the copy clear of that sprig. This block is olive
+         with cream copy, so the page-2 trick of washing the flowers out behind
+         the text isn't available here — a pale sprig at 40% would disappear
+         into the field rather than sit under it.
       {% endcomment %}
       <div class="relative z-10 mx-auto w-full max-w-2xl pt-20 md:pt-0">
         {# Full opacity: at /70 this 11px line sat at 3.70:1 on the olive. #}
