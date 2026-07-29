@@ -3,25 +3,26 @@
 <head>
   {% include "invitations/themes/_theme_head.html" %}
   {% comment %}
-  Wildflower Wreath — a scrolling web translation of the 6-page printed
-  invitation. One <section> per printed page, in order — except pages 2 and 3,
-  which share one:
+  Wildflower Wreath — a scrolling web translation of the printed invitation.
+  One <section> per printed page, in order:
 
     #cover         page 1  · full-bleed olive, tone-on-tone monogram + guest name
     #invitation    page 2  · white page inside the oval watercolor wreath
-      └ #seats     page 3  · full-color monogram, seats banner, RSVP deadline
     #dress-code    page 4  · dress code copy + full-bleed inspiration collage
     #gifts         page 5a · full-bleed olive gift block
     #rsvp          --      · shared RSVP form (web-only, no printed equivalent)
     #faq           page 5b · white Q&A block
     #closing       page 6  · full-bleed mauve sign-off
 
+  Printed page 3 — the full-color monogram, the reserved-seats banner and the
+  RSVP deadline — has no web counterpart: it is deliberately not rendered. Both
+  facts it carried still reach the guest, printed above the form in #rsvp (see
+  _rsvp_form.html): the seat count this invitation is good for, and the
+  reply-by date. That is the block that asks for the reply, so it is where they
+  belong on a page the guest can answer from.
+
   The scrolling page is organised as five parts — greeting, invitation, dress
-  code, gifts, RSVP — with the cover as the greeting. Printed page 3 is not one
-  of them: it closes the invitation instead, below the ceremony and reception
-  details, sharing that section's background and its corner sprig rather than
-  standing as a sixth stop of its own. #seats stays as an anchor on the block,
-  so a link already pointing at it still lands in the right place.
+  code, gifts, RSVP — with the cover as the greeting.
 
   Artwork: the watercolor florals are real illustrations shipped with the app,
   in invitations/static/invitations/wildflower/ — the wreath, the monogram, and
@@ -46,9 +47,9 @@
   palette-driven. A host-supplied monogram is rendered as a plain <img> instead
   — masking it would mean interpolating a user-controlled URL into inline CSS.
 
-  Where the print's colors are used as FIELDS — the seats banner, the closing
+  Where the print's colors are used as FIELDS — the cover, the closing
   endpaper — and for the names at 44px and up, they are reproduced exactly,
-  including the banner's 2.76:1 white-on-green. That is the source design and
+  including the names' 2.76:1 green on white. That is the source design and
   it is kept deliberately. Small type is a different job: 11px tracked capitals
   carry the scanning structure of every section below page 2, so those use the
   --wf-ink-* variants below, which darken lightness while holding the hue.
@@ -87,9 +88,9 @@
       /* --- Ink variants, for small type only --------------------------
          The print's green (#83a833) and mauve (#be688c) are 2.76:1 and 3.78:1
          on white. That is fine where the printed piece actually uses them — as
-         FIELDS of colour (the seats banner, the closing endpaper) and as the
-         names at 44px and up, all of which are kept exactly as printed. It is
-         not fine for 11px tracked capitals, which is what carries the scanning
+         the names at 44px and up, and as a FIELD of colour (the closing
+         endpaper), both of which are kept exactly as printed. It is not fine
+         for 11px tracked capitals, which is what carries the scanning
          structure of every section below page 2: at that size the ink is doing
          a different job than it does at 300dpi on paper.
 
@@ -260,7 +261,7 @@
   </section>
 
   {# ===================================================================== #}
-  {# PAGES 2 + 3 — The invitation in its wreath, then the reserved seats.  #}
+  {# PAGE 2 — The invitation inside its oval watercolor wreath.           #}
   {# ===================================================================== #}
   {% comment %} No horizontal padding below md: the wreath frame takes the full viewport
      width so its clear interior — only ~65% of the artwork — is as wide as it
@@ -268,9 +269,9 @@
      could not spare. Every block of copy in here carries its own instead.
 
      pb-56 on mobile reserves a band for the cosmos sprig at the foot of the
-     section: the printed piece has a full page's margin between the RSVP
-     deadline and those flowers, the scroll layout has none, and without the
-     band they print straight through that line at 390px.
+     section: the printed piece has a full page's margin between its last line
+     of copy and those flowers, the scroll layout has none, and without the
+     band they print straight through the details block at 390px.
   {% endcomment %}
   <section id="invitation" class="relative scroll-mt-24 overflow-hidden bg-surface-container-lowest md:px-margin-desktop pt-24 pb-56 md:py-section-gap">
     {% comment %} The line that introduces the couple — "junto a nuestras familias" and
@@ -377,81 +378,6 @@
     {# …and the same blocks below the oval, everywhere narrower. #}
     <div class="xl:hidden mx-auto mt-10 w-full max-w-md px-margin-mobile md:px-0 text-center [overflow-wrap:anywhere]">
       {% include "invitations/themes/_wildflower_details.html" %}
-    </div>
-
-    {# --- Printed page 3, at the foot of the same section ----------------- #}
-    {% comment %} Seats reserved: full-color monogram + leaf-green banner. Not a section
-       of its own — the page is organised as five parts (see the map at the top
-       of this file) and this is not one of them. It reads as the invitation's
-       closing block, the seats this invitation reserves, so it sits below the
-       ceremony and reception details on the same white ground, separated by
-       one deliberate break instead of by two section paddings, and shares the
-       section's corner sprig rather than carrying a second one.
-
-       Its own px-margin-mobile, because the section deliberately has none
-       below md. max-w-xl is wider than the details block above it — that is
-       the measure the banner needs to break its two lines like the print.
-    {% endcomment %}
-    <div id="seats" class="relative z-10 scroll-mt-24 mx-auto mt-24 md:mt-section-gap w-full max-w-xl px-margin-mobile md:px-0 text-center">
-      <h2 class="sr-only">{% trans "Your Seats" %}</h2>
-
-      {% comment %} The same symbol as the cover, but shown in its own colors here: the
-         bundled artwork is already the print's two-tone mark (mauve swash,
-         green letter and olive branch), so page 3 just renders the file. Only
-         the cover recolors it, and only because the print sets that one
-         tone-on-tone — see .wf-mono-tint.
-      {% endcomment %}
-      <div class="mx-auto w-[38vw] max-w-[190px] aspect-[421/500]">
-        {% if content.monogram_image_url %}
-          <img src="{{ content.monogram_image_url }}" alt=""
-               class="w-full h-full object-contain" loading="lazy" decoding="async">
-        {% else %}
-          <img src="{% static 'invitations/wildflower/monogram.webp' %}" alt=""
-               class="w-full h-full object-contain" loading="lazy" decoding="async">
-        {% endif %}
-      </div>
-
-      {% if content.seats_intro %}
-        <p class="wf-balance mt-10 text-sm leading-[2] tracking-[0.16em] text-on-surface">
-          {{ content.seats_intro|linebreaksbr }}
-        </p>
-      {% endif %}
-
-      {% comment %} Solid leaf-green banner — ~72% of the measure at 380px so the two
-         lines still break like the print, 60% from 768px up.
-      {% endcomment %}
-      <p class="mx-auto mt-10 w-[92%] md:w-[72%] bg-tertiary text-on-tertiary px-6 py-5 text-[0.78rem] font-semibold uppercase leading-[2] tracking-[0.18em]">
-        {% blocktrans count counter=invitation.num_guests %}We have reserved <strong>{{ counter }} seat</strong> for you{% plural %}We have reserved <strong>{{ counter }} seats</strong> for you{% endblocktrans %}
-      </p>
-
-      {% if content.rsvp_deadline %}
-        <p class="wf-balance mx-auto mt-8 max-w-md text-[0.72rem] uppercase leading-[2] tracking-[0.22em] text-on-surface-variant">
-          {% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly confirm your attendance before {{ deadline }}{% endblocktrans %}
-        </p>
-      {% endif %}
-
-      {% comment %} This is the block that asks the guest to reply, so it carries the
-         control rather than leaving the ask to the nav row: the form is the far
-         side of the dress code and the gifts from here. #rsvp renders
-         unconditionally, so the link needs no guard, and it shows whether or
-         not the host set a deadline above it.
-
-         Filled rather than the outlined View Map pill — it is the primary
-         action here, and the pill shape keeps it in the same family. The
-         color pair is the gifts block's, for the same reason (see the note
-         there): primary-container/on-primary-container is a fixed family
-         token, so an 11px tracked label stays legible (5.6:1 with the shipped
-         palette) no matter how pale a host's own primary is. Not the banner's
-         leaf green — that is a field color here, not an ink (see --wf-ink-*),
-         and repeating it directly below the banner would read as a second band.
-      {% endcomment %}
-      <a href="#rsvp"
-         class="mt-10 inline-flex min-h-[44px] items-center justify-center rounded-full
-                bg-primary-container text-on-primary-container px-10 text-[0.66rem]
-                font-semibold uppercase tracking-[0.26em] hover:opacity-90
-                transition-opacity">
-        {% trans "Confirm here" %}
-      </a>
     </div>
 
     {# Bottom-left cosmos sprig, radiating up-right out of the corner. #}
@@ -564,7 +490,8 @@
       {% endcomment %}
       {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-waxflower.webp" classes="absolute -top-8 -right-4 md:-right-8 h-[180px] md:h-[280px] w-auto opacity-95 rotate-180" %}
 
-      {# pt-20 on mobile keeps the copy clear of that sprig; see the seats note. #}
+      {# pt-20 on mobile keeps the copy clear of that sprig, the same job the
+         dress-code section's pt-48 does for its own. #}
       <div class="relative z-10 mx-auto w-full max-w-2xl pt-20 md:pt-0">
         {# Full opacity: at /70 this 11px line sat at 3.70:1 on the olive. #}
         <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-on-primary-container">{% trans "Gifts" %}</h2>

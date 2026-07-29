@@ -105,8 +105,8 @@ _EXTRAS_FIELD_CATALOG: dict[str, Any] = {
     "monogram_image_url": lambda: forms.URLField(
         required=False,
         label="Monogram / logo image URL",
-        help_text="Your own monogram artwork, shown on the cover and above the "
-        "seats banner. Blank = the template's monogram.",
+        help_text="Your own monogram artwork, shown on the cover. "
+        "Blank = the template's monogram.",
         widget=forms.URLInput(attrs={"placeholder": "https://…"}),
     ),
     "wreath_image_url": lambda: forms.URLField(
@@ -130,12 +130,6 @@ _EXTRAS_FIELD_CATALOG: dict[str, Any] = {
         widget=forms.Textarea(attrs={"rows": 3}),
         help_text="The sentence that follows the names, e.g. 'we have the "
         "honor of inviting you…'.",
-    ),
-    "seats_intro": lambda: forms.CharField(
-        required=False,
-        label="Seats intro",
-        widget=forms.Textarea(attrs={"rows": 3}),
-        help_text="Warm line above the reserved-seats banner.",
     ),
     "dress_code_intro": lambda: forms.CharField(
         required=False,
@@ -269,8 +263,6 @@ _EXTRAS_GROUPS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
      ("ceremony_time", "ceremony_venue", "ceremony_address")),
     ("Reception", "Where the celebration continues.",
      ("reception_time", "reception_venue", "reception_address")),
-    ("Seats", "How many places are held for each guest.",
-     ("seats_intro",)),
     ("Lodging", "Hotels, accommodations, travel info.",
      ("lodging_info",)),
     ("Etiquette", "Optional notes for guests.",
