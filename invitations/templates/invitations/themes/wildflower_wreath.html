@@ -490,8 +490,9 @@
       {% endcomment %}
       {% include "invitations/themes/_wildflower_sprig.html" with asset="invitations/wildflower/sprig-waxflower.webp" classes="absolute -top-8 -right-4 md:-right-8 h-[180px] md:h-[280px] w-auto opacity-95 rotate-180" %}
 
-      {# pt-20 on mobile keeps the copy clear of that sprig, the same job the
-         dress-code section's pt-48 does for its own. #}
+      {% comment %} pt-20 on mobile keeps the copy clear of that sprig, the same job the
+         dress-code section's pt-48 does for its own.
+      {% endcomment %}
       <div class="relative z-10 mx-auto w-full max-w-2xl pt-20 md:pt-0">
         {# Full opacity: at /70 this 11px line sat at 3.70:1 on the olive. #}
         <h2 class="text-[0.7rem] uppercase tracking-[0.34em] text-on-primary-container">{% trans "Gifts" %}</h2>
