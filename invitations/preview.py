@@ -84,10 +84,6 @@ _DUMMY_CONTENT: dict[str, object] = {
         "we have the honor of inviting you to celebrate the sacrament of "
         "marriage with us."
     ),
-    "seats_intro": (
-        "We are so excited and happy to celebrate this moment surrounded by "
-        "the people we love most."
-    ),
     "dress_code_intro": (
         "We want everyone to feel comfortable and elegant celebrating with us."
     ),

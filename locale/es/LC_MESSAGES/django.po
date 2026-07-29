@@ -157,18 +157,11 @@ msgstr "Ver Mapa"
 msgid "Confirm Your Attendance"
 msgstr "Confirma tu Asistencia"
 
-# The Wildflower Wreath's seats page — the jump link down to the RSVP form.
-msgid "Confirm here"
-msgstr "Confirma aquí"
-
 msgid "Frequently Asked Questions"
 msgstr "Preguntas Frecuentes"
 
 msgid "Invitation"
 msgstr "Invitación"
-
-msgid "Your Seats"
-msgstr "Tus Asientos"
 
 msgid "Dress Code"
 msgstr "Código de Vestimenta"
@@ -196,13 +189,3 @@ msgstr "Con cariño"
 
 msgid "For you"
 msgstr "Para ti"
-
-#, python-format
-msgid "We have reserved <strong>%(counter)s seat</strong> for you"
-msgid_plural "We have reserved <strong>%(counter)s seats</strong> for you"
-msgstr[0] "Hemos reservado <strong>%(counter)s asiento</strong> para ti"
-msgstr[1] "Hemos reservado <strong>%(counter)s asientos</strong> para ti"
-
-#, python-format
-msgid "Kindly confirm your attendance before %(deadline)s"
-msgstr "Agradecemos que confirmes tu asistencia antes del %(deadline)s"

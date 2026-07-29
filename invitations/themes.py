@@ -188,9 +188,9 @@ _THEMES: dict[str, Theme] = {
         slug=Party.TemplateChoice.WILDFLOWER_WREATH.value,
         display_name="Wildflower Wreath",
         description="Watercolor wildflower wreath framing the invitation, "
-        "with a seats-reserved banner personalised per guest. Continues into "
-        "an illustrated dress code, a gift and registry block, and a "
-        "frequently-asked-questions section.",
+        "with the ceremony and reception details set inside the frame. "
+        "Continues into an illustrated dress code, a gift and registry block, "
+        "and a frequently-asked-questions section.",
         template_path="invitations/themes/wildflower_wreath.html",
         family="garden",
         content_fields=(
@@ -206,7 +206,6 @@ _THEMES: dict[str, Theme] = {
             "reception_time",
             "reception_venue",
             "reception_address",
-            "seats_intro",
             "rsvp_deadline",
             "dress_code",
             "dress_code_intro",
