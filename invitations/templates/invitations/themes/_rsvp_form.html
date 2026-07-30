@@ -1,40 +1,106 @@
 {% load i18n %}
 {% comment %}
 Shared RSVP form, themed via Tailwind utility classes that pull from the
-palette-driven config. Used by all three theme templates.
+palette-driven config. Used by all seven theme templates.
 
 Chrome strings are wrapped with i18n tags. The active language is set by
 InvitationPublicView / RSVPSubmitView based on `invitation.language`.
+
+Reading order is context → decision → qualifier → optional → send:
+
+  header  everything the guest needs BEFORE answering (who it's for, the
+          host's note, the deadline, the adults-only rule, and — on a
+          revisit — what they already said)
+  form    "Will you attend?" leads on type size, seats supports it, the
+          message is last because it is the only optional field.
+
+The seat allocation is stated exactly once. It used to appear twice — a
+"This invitation is for 4 guests." line in the header and a "covers up to 4
+seats." line 300px below it — which read as a bug. For a multi-seat
+invitation the number now lives with the seat question that uses it; the
+header line survives only for the single-guest case, where there is no seat
+question to carry it.
 {% endcomment %}
+<style>
+  /* The seat question is meaningless once a guest has declined, so it collapses
+     on "No". A grid row animating to 0 is what gets a height transition without
+     hard-coding one; the inner wrapper does the clipping.
+
+     No JS = no `.is-collapsed`, so the question renders open and the guest can
+     still answer it. `.is-animated` is added by the first change handler, so a
+     revisit that loads already-declined starts collapsed without playing the
+     transition on load.
+
+     minmax(0, …) is load-bearing, not decoration: a bare `0fr` track keeps an
+     `auto` minimum, which floors it at the content's own height — the collapsed
+     state measured exactly as tall as the open one. Pinning the minimum to 0 is
+     what lets the track actually reach zero. */
+  [data-rsvp-collapse] { display: grid; grid-template-rows: minmax(0, 1fr); opacity: 1; }
+  [data-rsvp-collapse] > * { overflow: hidden; }
+  [data-rsvp-collapse].is-collapsed { grid-template-rows: minmax(0, 0fr); opacity: 0; }
+  [data-rsvp-collapse].is-animated {
+    transition: grid-template-rows 420ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 220ms ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-rsvp-collapse].is-animated { transition: none; }
+  }
+</style>
 <div class="max-w-md mx-auto bg-surface-container-low rounded-md px-margin-mobile md:px-12 py-12">
-  <p class="text-center text-on-surface-variant mb-2 italic">
-    {% blocktrans with name=invitation.label %}Hi {{ name }},{% endblocktrans %}
-  </p>
 
-  {% if invitation.message %}
-    <blockquote class="mx-auto max-w-sm my-5 px-5 py-3 border-l-2 border-primary text-on-surface-variant italic text-sm leading-relaxed">
-      {{ invitation.message|linebreaksbr }}
-    </blockquote>
-  {% endif %}
-
-  <p class="text-center text-on-surface-variant mb-1">
-    {% blocktrans count counter=invitation.num_guests %}This invitation is for <strong>{{ counter }} guest</strong>.{% plural %}This invitation is for <strong>{{ counter }} guests</strong>.{% endblocktrans %}
-  </p>
-  {% if content.rsvp_deadline %}
-    <p class="text-center text-on-surface-variant text-sm mb-6">
-      {% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly reply by {{ deadline }}{% endblocktrans %}
+  {% comment %} ---- Context: read before answering ---------------------- {% endcomment %}
+  <header class="text-center">
+    <p class="text-on-surface-variant italic">
+      {% blocktrans with name=invitation.label %}Hi {{ name }},{% endblocktrans %}
     </p>
-  {% else %}
-    <p class="mb-6"></p>
-  {% endif %}
 
-  {% if rsvp %}
-    <p class="text-center text-on-surface-variant mb-4">
-      {% blocktrans with status=rsvp.get_status_display %}Current response: <strong>{{ status }}</strong> · update below.{% endblocktrans %}
-    </p>
-  {% endif %}
+    {% if invitation.message %}
+      {% comment %} 1px, not 2px: the rule is here to mark quoted speech, and at 2px in
+         the palette's primary it started competing with the submit button for
+         the only saturated mark in the card.
+      {% endcomment %}
+      <blockquote class="mx-auto max-w-sm mt-6 px-5 py-3 border-l border-primary text-left text-on-surface-variant italic text-sm leading-relaxed">
+        {{ invitation.message|linebreaksbr }}
+      </blockquote>
+    {% endif %}
 
-  <form action="{% url 'rsvp_submit' invitation.token %}" method="post" class="space-y-5">
+    {% comment %} One tight cluster of event facts — they are read together, so they sit
+       together, with the generous space kept for the boundary with the form.
+    {% endcomment %}
+    <div class="mt-6 space-y-1 text-sm text-on-surface-variant">
+      {% if invitation.num_guests == 1 %}
+        {# Multi-seat invitations state their allocation at the seat question. #}
+        <p>{% blocktrans count counter=invitation.num_guests %}This invitation is for <strong>{{ counter }} guest</strong>.{% plural %}This invitation is for <strong>{{ counter }} guests</strong>.{% endblocktrans %}</p>
+      {% endif %}
+      {% if content.rsvp_deadline %}
+        <p>{% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly reply by {{ deadline }}{% endblocktrans %}</p>
+      {% endif %}
+      {% comment %} Moved out of the "Will you attend?" fieldset. It is a fact about the
+         event, not a constraint on that one question, and sitting between the
+         two questions it split the pair that belongs together. Here it is
+         read before either answer — including by a screen reader, which
+         reaches it on the way into the form.
+      {% endcomment %}
+      <p class="text-xs leading-relaxed">
+        <span class="uppercase tracking-widest">{% trans "Note" %}</span> ·
+        {% trans "The reception will be an adults-only space" %}
+      </p>
+    </div>
+
+    {% if rsvp %}
+      {% comment %} The submit redirect lands back on #rsvp precisely so the guest sees
+         this line, so it is an acknowledgement rather than another muted
+         sentence — same tinted-band treatment as the "message sent" block
+         below, which is this file's existing vocabulary for "on record".
+      {% endcomment %}
+      <p class="mt-6 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-md text-sm text-on-surface">
+        {% blocktrans with status=rsvp.get_status_display %}Current response: <strong>{{ status }}</strong> · update below.{% endblocktrans %}
+      </p>
+    {% endif %}
+  </header>
+
+  {% comment %} ---- The task ------------------------------------------- {% endcomment %}
+  <form action="{% url 'rsvp_submit' invitation.token %}" method="post" class="mt-10">
     {% csrf_token %}
     {% comment %}
     fieldset/legend, not a bare <label>: the question labels the GROUP, and a
@@ -46,10 +112,10 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
     ~16px radio glyph itself.
     {% endcomment %}
     <fieldset>
-      <legend class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
+      <legend class="block text-xs uppercase tracking-widest mb-3 text-on-surface-variant">
         {% trans "Will you attend?" %}
       </legend>
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-wrap gap-x-6 gap-y-1">
         {% for radio in form.status %}
           <label class="inline-flex min-h-[44px] items-center gap-2 pr-2 cursor-pointer">
             {{ radio.tag }}
@@ -58,73 +124,159 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
         {% endfor %}
       </div>
       {{ form.status.errors }}
-      {% comment %} Sits inside the fieldset, so a screen reader reaching the group hears
-         the constraint with the question rather than after the answer. Muted and
-         small: it qualifies the choice above, it is not a second question.
-      {% endcomment %}
-      <p class="mt-3 text-xs leading-relaxed text-on-surface-variant">
-        <span class="uppercase tracking-widest">{% trans "Note" %}</span> ·
-        {% trans "The reception will be an adults-only space" %}
-      </p>
     </fieldset>
+
     {% comment %}
     Only worth asking when there is a choice to make: an invitation for one
-    person can only be answered "1", so the dropdown would be a control with a
-    single option. The field is required=False and defaults to the full
-    allocation precisely so it can be omitted here.
+    person can only be answered "1", so the control would carry a single
+    option. The field is required=False and defaults to the full allocation
+    precisely so it can be omitted here.
 
-    A native <select> rather than a second radio row — a table of eight would
-    otherwise put eight radios next to the two that answer the real question.
+    Numerals rather than a dropdown: the whole range is visible, the answer is
+    one tap, and it reads as part of the invitation instead of the browser's
+    own furniture — a native <select> picks up the forms plugin's four-sided
+    box and its own blue chevron, neither of which belongs in these themes.
+    Past eight the row would out-weigh the two options that answer the real
+    question, so that case keeps a select, restyled to the same hairline rule
+    every other field in this form uses.
     {% endcomment %}
     {% if invitation.num_guests > 1 %}
-      <div>
-        <label for="{{ form.seats.id_for_label }}" class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
-          {% trans "How many seats will you use?" %}
-        </label>
-        <select name="{{ form.seats.html_name }}" id="{{ form.seats.id_for_label }}"
-                class="min-h-[44px] bg-transparent border-b border-outline-variant px-1 py-2 pr-8 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">
-          {% for value, label in form.seats.field.choices %}
-            <option value="{{ value }}" {% if form.seats.value|stringformat:"s" == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-        <p class="text-xs text-on-surface-variant mt-1.5">
-          {% blocktrans count counter=invitation.num_guests %}This invitation covers {{ counter }} seat.{% plural %}This invitation covers up to {{ counter }} seats.{% endblocktrans %}
-        </p>
-        {{ form.seats.errors }}
+      <div data-rsvp-collapse>
+        <div>
+          {% comment %} margin, not padding, and on the fieldset rather than the clipped
+             wrapper — both halves matter:
+
+             padding on the fieldset leaves the <legend> behind, because a legend
+             renders at the fieldset's top border edge and ignores its padding, so
+             the label stayed jammed against the radios while only the chips moved
+             down. Margin moves the whole box, legend included.
+
+             padding on the clipped wrapper can't collapse: with border-box sizing
+             an element's height never goes below its own padding, so the "hidden"
+             question kept a 40px ghost. The wrapper's overflow:hidden contains
+             this margin instead, and the whole group clips to zero.
+          {% endcomment %}
+          <fieldset class="mt-10">
+            <legend class="block text-xs uppercase tracking-widest mb-3 text-on-surface-variant">
+              {% trans "How many seats will you use?" %}
+            </legend>
+
+            {% if invitation.num_guests <= 8 %}
+              <div class="flex flex-wrap gap-2">
+                {% for value, label in form.seats.field.choices %}
+                  {% comment %} The input stays in the accessibility tree and the tab order —
+                     sr-only, never `hidden` — and `peer` lets the visible chip
+                     carry checked and focus state for it.
+                  {% endcomment %}
+                  <label class="cursor-pointer">
+                    <input type="radio" name="{{ form.seats.html_name }}" value="{{ value }}"
+                           class="sr-only peer"
+                           {% if form.seats.value|stringformat:"s" == value %}checked{% endif %}>
+                    <span class="flex min-w-[3rem] min-h-[44px] items-center justify-center rounded border border-outline-variant px-3 font-display text-lg leading-none transition-colors hover:border-outline peer-checked:border-primary peer-checked:bg-primary peer-checked:text-on-primary peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+                      {{ label }}
+                    </span>
+                  </label>
+                {% endfor %}
+              </div>
+              <p class="mt-3 text-xs text-on-surface-variant">
+                {% trans "Choose fewer if someone can't make it." %}
+              </p>
+            {% else %}
+              <div class="relative">
+                <select name="{{ form.seats.html_name }}" id="{{ form.seats.id_for_label }}"
+                        class="w-full appearance-none rounded border border-outline-variant bg-transparent min-h-[44px] px-3 py-2 pr-9 font-display text-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">
+                  {% for value, label in form.seats.field.choices %}
+                    <option value="{{ value }}" {% if form.seats.value|stringformat:"s" == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                {# The plugin's own chevron goes with appearance-none; this one inherits the palette. #}
+                <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant"
+                     viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M6 8l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <p class="mt-3 text-xs text-on-surface-variant">
+                {% blocktrans count counter=invitation.num_guests %}This invitation covers {{ counter }} seat.{% plural %}This invitation covers up to {{ counter }} seats.{% endblocktrans %}
+              </p>
+            {% endif %}
+            {{ form.seats.errors }}
+          </fieldset>
+        </div>
       </div>
     {% endif %}
+
     {% if rsvp and rsvp.message %}
       {# Message already sent — show it as a read-only "sent" block. #}
-      <div>
-        <p class="text-xs uppercase tracking-widest text-on-surface-variant mb-2">
+      <div class="mt-10">
+        <p class="text-xs uppercase tracking-widest text-on-surface-variant mb-3">
           {% trans "Your message · sent" %}
         </p>
         <div class="px-4 py-3 bg-primary/10 border border-primary/20 rounded-md text-sm leading-relaxed">
           {{ rsvp.message|linebreaksbr }}
         </div>
-        <p class="text-xs text-on-surface-variant mt-1.5">
+        <p class="text-xs text-on-surface-variant mt-3">
           {% blocktrans with sent_at=rsvp.responded_at|date:"DATETIME_FORMAT" %}Sent {{ sent_at }} · this message can't be edited.{% endblocktrans %}
         </p>
       </div>
     {% else %}
-      <div>
-        <label for="{{ form.message.id_for_label }}" class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
+      <div class="mt-10">
+        <label for="{{ form.message.id_for_label }}" class="block text-xs uppercase tracking-widest mb-3 text-on-surface-variant">
           {% trans "Message for the host (optional)" %}
         </label>
-        {% comment %} A 1px border-colour change was the only focus cue here; keep it and
-           add a ring, so keyboard focus is visible rather than merely different.
+        {% comment %} The same hairline rectangle as the seat chips, so every box a guest can
+           act on in this card is drawn the same way. A bottom rule alone — which
+           is what the class list used to ask for — left the field with no visible
+           top or sides and read as blank card, not as somewhere to type.
+
+           The focus ring is kept on top of the colour change, so keyboard focus is
+           visible rather than merely different.
         {% endcomment %}
         <textarea name="{{ form.message.html_name }}" id="{{ form.message.id_for_label }}"
                   rows="3"
-                  class="w-full bg-transparent border-b border-outline-variant px-1 py-2 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">{{ form.message.value|default:"" }}</textarea>
+                  class="w-full rounded border border-outline-variant bg-transparent px-3 py-2.5 text-sm leading-relaxed focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">{{ form.message.value|default:"" }}</textarea>
         {{ form.message.errors }}
       </div>
     {% endif %}
-    <div class="text-center">
+
+    <div class="mt-10 text-center">
       <button type="submit"
-              class="inline-flex min-h-[44px] items-center justify-center px-10 py-3 bg-primary text-on-primary uppercase tracking-widest text-xs hover:opacity-90 transition rounded">
+              class="inline-flex min-h-[44px] items-center justify-center px-12 py-3 bg-primary text-on-primary uppercase tracking-widest text-xs hover:opacity-90 transition rounded">
         {% if rsvp %}{% trans "Update RSVP" %}{% else %}{% trans "Send RSVP" %}{% endif %}
       </button>
     </div>
   </form>
 </div>
+{% if invitation.num_guests > 1 %}
+  <script>
+    /* Progressive enhancement only: everything below is about hiding a
+       question that no longer applies. Without it the form is unchanged. */
+    (function () {
+      var seats = document.querySelector("[data-rsvp-collapse]");
+      var radios = document.querySelectorAll('input[name="{{ form.status.html_name|escapejs }}"]');
+      if (!seats || !radios.length) return;
+
+      function sync() {
+        var declined = false;
+        for (var i = 0; i < radios.length; i++) {
+          if (radios[i].checked && radios[i].value === "no") declined = true;
+        }
+        seats.classList.toggle("is-collapsed", declined);
+        /* Collapsed content is zero-height but still focusable without this —
+           tabbing would land on a chip nobody can see. */
+        seats.toggleAttribute("inert", declined);
+      }
+
+      for (var i = 0; i < radios.length; i++) {
+        radios[i].addEventListener("change", function () {
+          /* Transition only from the first real answer onward. A revisit that
+             loads already-declined has to start collapsed without playing the
+             animation, and turning it on here — rather than a frame after load
+             — means no timing to get wrong in a backgrounded tab. */
+          seats.classList.add("is-animated");
+          sync();
+        });
+      }
+      sync();
+    })();
+  </script>
+{% endif %}

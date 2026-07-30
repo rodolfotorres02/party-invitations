@@ -41,5 +41,26 @@ class InvitationAdmin(admin.ModelAdmin):
 
 @admin.register(RSVP)
 class RSVPAdmin(admin.ModelAdmin):
-    list_display = ("invitation", "status", "seats_confirmed", "responded_at")
+    list_display = (
+        "invitation",
+        "status",
+        "seats_confirmed",
+        "seats_offered",
+        "message",
+        "responded_at",
+    )
     list_filter = ("status",)
+    search_fields = ("invitation__label", "message")
+    # `seats_confirmed` and `seats_offered` both read through to the
+    # invitation, so without this the changelist runs a query per row.
+    list_select_related = ("invitation",)
+
+    @admin.display(description="Seats offered", ordering="invitation__num_guests")
+    def seats_offered(self, obj: RSVP) -> int:
+        """The allocation `seats_confirmed` is a fraction of.
+
+        Confirmed seats mean nothing on their own — 2 is good news on an
+        invitation for 2 and bad news on one for 6 — so the ceiling is shown
+        next to it.
+        """
+        return obj.invitation.num_guests
