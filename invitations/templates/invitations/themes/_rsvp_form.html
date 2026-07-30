@@ -58,7 +58,41 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
         {% endfor %}
       </div>
       {{ form.status.errors }}
+      {% comment %} Sits inside the fieldset, so a screen reader reaching the group hears
+         the constraint with the question rather than after the answer. Muted and
+         small: it qualifies the choice above, it is not a second question.
+      {% endcomment %}
+      <p class="mt-3 text-xs leading-relaxed text-on-surface-variant">
+        <span class="uppercase tracking-widest">{% trans "Note" %}</span> ·
+        {% trans "The reception will be an adults-only space" %}
+      </p>
     </fieldset>
+    {% comment %}
+    Only worth asking when there is a choice to make: an invitation for one
+    person can only be answered "1", so the dropdown would be a control with a
+    single option. The field is required=False and defaults to the full
+    allocation precisely so it can be omitted here.
+
+    A native <select> rather than a second radio row — a table of eight would
+    otherwise put eight radios next to the two that answer the real question.
+    {% endcomment %}
+    {% if invitation.num_guests > 1 %}
+      <div>
+        <label for="{{ form.seats.id_for_label }}" class="block text-xs uppercase tracking-widest mb-2 text-on-surface-variant">
+          {% trans "How many seats will you use?" %}
+        </label>
+        <select name="{{ form.seats.html_name }}" id="{{ form.seats.id_for_label }}"
+                class="min-h-[44px] bg-transparent border-b border-outline-variant px-1 py-2 pr-8 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">
+          {% for value, label in form.seats.field.choices %}
+            <option value="{{ value }}" {% if form.seats.value|stringformat:"s" == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <p class="text-xs text-on-surface-variant mt-1.5">
+          {% blocktrans count counter=invitation.num_guests %}This invitation covers {{ counter }} seat.{% plural %}This invitation covers up to {{ counter }} seats.{% endblocktrans %}
+        </p>
+        {{ form.seats.errors }}
+      </div>
+    {% endif %}
     {% if rsvp and rsvp.message %}
       {# Message already sent — show it as a read-only "sent" block. #}
       <div>

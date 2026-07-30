@@ -23,12 +23,18 @@ class RSVPService:
         token: UUID,
         *,
         status: str,
+        seats: Optional[int] = None,
         message: str = "",
     ) -> RSVP:
         """Record (or update) a guest's response to an invitation by token.
 
-        The headcount is fixed on the invitation by the organizer — the
-        responder only chooses yes/no/maybe and an optional message.
+        The organizer fixes the ceiling on the invitation; the responder
+        chooses yes/no/maybe, how many of those seats they will use, and an
+        optional message.
+
+        `seats` is clamped to 1..num_guests here as well as in the form, so a
+        caller that skips the form cannot write a headcount the organizer never
+        offered. Omitting it means the full allocation.
 
         A non-empty `message` is written; an empty `message` is treated as
         "no change" so updating status later doesn't clobber an existing note.
@@ -36,7 +42,11 @@ class RSVPService:
         if status not in RSVP.Status.values:
             raise ValueError(f"Invalid RSVP status: {status!r}.")
         invitation = self._invitations.get_by_token(token)
-        fields: dict[str, Any] = {"status": status}
+        allocation = max(1, invitation.num_guests)
+        fields: dict[str, Any] = {
+            "status": status,
+            "seats": allocation if seats is None else max(1, min(seats, allocation)),
+        }
         if message:
             fields["message"] = message
         return self._rsvps.upsert_for_invitation(invitation, **fields)

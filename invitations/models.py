@@ -217,6 +217,19 @@ class RSVP(TimestampedModel):
         Invitation, on_delete=models.CASCADE, related_name="rsvp"
     )
     status = models.CharField(max_length=8, choices=Status.choices)
+    # How many of the invitation's seats the guest is actually taking up. The
+    # organizer still fixes the ceiling (Invitation.num_guests); this is the
+    # guest narrowing it — "we're a table of two, only one of us can make it".
+    #
+    # NULL, not 0, is the "never asked" value: the field is newer than the
+    # RSVPs already in the table, and a row that predates the question has not
+    # answered it rather than answered it with zero. Read it through
+    # `seats_confirmed`, which resolves both cases.
+    seats = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Seats the guest confirmed, up to the invitation's num_guests.",
+    )
     message = models.TextField(blank=True)
     responded_at = models.DateTimeField(auto_now=True)
 
@@ -226,3 +239,17 @@ class RSVP(TimestampedModel):
 
     def __str__(self) -> str:
         return f"{self.invitation.label} → {self.get_status_display()}"
+
+    @property
+    def seats_confirmed(self) -> int:
+        """Seats to count for this RSVP, safe to sum across a whole party.
+
+        A declined invitation takes no seats. An RSVP answered before the
+        question existed falls back to the full allocation, which is what the
+        headcount silently assumed for those rows all along.
+        """
+        if self.status == self.Status.NO:
+            return 0
+        if self.seats is None:
+            return self.invitation.num_guests
+        return self.seats

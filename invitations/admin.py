@@ -41,5 +41,5 @@ class InvitationAdmin(admin.ModelAdmin):
 
 @admin.register(RSVP)
 class RSVPAdmin(admin.ModelAdmin):
-    list_display = ("invitation", "status", "responded_at")
+    list_display = ("invitation", "status", "seats_confirmed", "responded_at")
     list_filter = ("status",)

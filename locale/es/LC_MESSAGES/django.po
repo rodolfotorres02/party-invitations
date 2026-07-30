@@ -41,6 +41,21 @@ msgstr "Respuesta actual: <strong>%(status)s</strong> · actualízala abajo."
 msgid "Will you attend?"
 msgstr "¿Asistirás?"
 
+msgid "Note"
+msgstr "Nota"
+
+msgid "The reception will be an adults-only space"
+msgstr "La recepción será un espacio solo para adultos"
+
+msgid "How many seats will you use?"
+msgstr "¿Cuántos lugares usarás?"
+
+#, python-format
+msgid "This invitation covers %(counter)s seat."
+msgid_plural "This invitation covers up to %(counter)s seats."
+msgstr[0] "Esta invitación cubre %(counter)s lugar."
+msgstr[1] "Esta invitación cubre hasta %(counter)s lugares."
+
 msgid "Your message · sent"
 msgstr "Tu mensaje · enviado"
 
