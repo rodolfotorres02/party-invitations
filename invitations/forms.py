@@ -369,7 +369,17 @@ class RSVPForm(forms.Form):
     status = forms.ChoiceField(
         choices=RSVP.Status.choices,
         label="Will you attend?",
-        widget=forms.RadioSelect,
+        # The forms plugin draws a radio's checked dot and focus ring in its
+        # own blue; `text-primary` / `ring-primary` point both at the party's
+        # palette instead, so the only saturated marks in the card belong to
+        # the invitation. Set here rather than in the template because
+        # `{{ radio.tag }}` renders the widget's own attrs.
+        widget=forms.RadioSelect(
+            attrs={
+                "class": "text-primary border-outline "
+                "focus:ring-primary/50 focus:ring-offset-0"
+            }
+        ),
     )
     # Choices are per-invitation, so they are built in __init__ rather than
     # declared here. Leaving the ceiling to the widget alone would not bind it:

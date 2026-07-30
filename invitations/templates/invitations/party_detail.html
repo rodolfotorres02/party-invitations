@@ -73,18 +73,36 @@
             <th class="text-left font-medium px-6 py-3">Recipient</th>
             <th class="text-left font-medium px-6 py-3">Guests</th>
             <th class="text-left font-medium px-6 py-3">RSVP</th>
-            <th class="text-left font-medium px-6 py-3">Created</th>
+            {% comment %} The message needs the room the "Created" column was spending on a
+               date that never told the host anything they had to act on.
+            {% endcomment %}
+            <th class="text-left font-medium px-6 py-3">Message</th>
             <th class="text-right font-medium px-6 py-3"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-zinc-100">
           {% for invitation in invitations %}
             <tr class="hover:bg-zinc-50/50 transition">
-              <td class="px-6 py-3 font-medium text-zinc-900">
+              {# align-top throughout: a long message makes its row tall, and a vertically-centred name floating beside it breaks the scan line. #}
+              <td class="px-6 py-3 align-top font-medium text-zinc-900">
                 <a href="{% url 'invitation_detail' party.id invitation.id %}" class="hover:text-brand-700">{{ invitation.label }}</a>
                 <span class="ml-1 inline-flex items-center px-1.5 rounded bg-zinc-100 text-zinc-600 text-[10px] font-medium uppercase">{{ invitation.language }}</span>
               </td>
-              <td class="px-6 py-3 text-zinc-600">{{ invitation.num_guests }}</td>
+              {% comment %} The allocation alone stopped being the whole story once guests could
+                 confirm fewer seats than they were offered. Once a guest has replied,
+                 the confirmed number leads and the allocation follows in muted type —
+                 the host plans around the first number, and the second is only there
+                 to say what it was measured against. An unanswered invitation has
+                 nothing to compare yet, so it shows the allocation alone.
+              {% endcomment %}
+              <td class="px-6 py-3 align-top text-zinc-600 whitespace-nowrap">
+                {% if invitation.rsvp %}
+                  <span class="font-semibold text-zinc-900">{{ invitation.rsvp.seats_confirmed }}</span>
+                  <span class="text-zinc-400 text-xs">of {{ invitation.num_guests }}</span>
+                {% else %}
+                  {{ invitation.num_guests }}
+                {% endif %}
+              </td>
               <td class="px-6 py-3 align-top">
                 {% if invitation.rsvp %}
                   {% if invitation.rsvp.status == 'yes' %}
@@ -94,17 +112,36 @@
                   {% else %}
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium">Maybe</span>
                   {% endif %}
-                  {% if invitation.rsvp.message %}
-                    <p class="mt-1.5 text-xs italic text-zinc-600 leading-snug line-clamp-3" title="{{ invitation.rsvp.message }}">
-                      &ldquo;{{ invitation.rsvp.message }}&rdquo;
-                    </p>
-                  {% endif %}
                 {% else %}
-                  <span class="text-zinc-400 text-xs">No response</span>
+                  <span class="text-zinc-400 text-xs whitespace-nowrap">No response</span>
                 {% endif %}
               </td>
-              <td class="px-6 py-3 text-zinc-500 text-xs">{{ invitation.created_at|date:"M j, Y" }}</td>
-              <td class="px-6 py-3 text-right">
+              {% comment %} Messages are guest-written and unbounded — one long one used to set the
+                 height of every row in the table. 200 characters is the cap that fits
+                 without the cell dictating row height; anything longer keeps its first
+                 200 and moves the rest into a dialog, so the full text is one click
+                 away instead of either truncated for good or flooding the page.
+              {% endcomment %}
+              <td class="px-6 py-3 align-top max-w-xs">
+                {% if invitation.rsvp.message %}
+                  <p class="text-xs italic text-zinc-600 leading-snug">
+                    &ldquo;{{ invitation.rsvp.message|truncatechars:200 }}&rdquo;
+                  </p>
+                  {% if invitation.rsvp.message|length > 200 %}
+                    <button type="button"
+                            class="mt-1 text-xs font-medium text-brand-700 hover:text-brand-900 focus-ring rounded"
+                            data-message-open
+                            data-message-from="{{ invitation.label }}"
+                            data-message-body="{{ invitation.rsvp.message }}">
+                      Read full message
+                    </button>
+                  {% endif %}
+                {% else %}
+                  <span class="text-zinc-300 text-xs">—</span>
+                {% endif %}
+              </td>
+              {# nowrap: the message column takes the slack, so the actions stay one line. #}
+              <td class="px-6 py-3 text-right align-top whitespace-nowrap">
                 <a href="{% url 'invitation_detail' party.id invitation.id %}"
                    class="text-zinc-700 hover:text-zinc-900 text-xs font-medium">Details</a>
                 <span class="mx-1.5 text-zinc-300">·</span>
@@ -124,4 +161,52 @@
       </div>
     {% endif %}
   </section>
+
+  {% comment %} One dialog reused by every row rather than one per message: the text is
+     carried on the trigger and copied in on open, so a party with 200 guests
+     doesn't ship 200 hidden copies of their messages.
+
+     A native <dialog> is what makes this cheap — showModal() gives the backdrop,
+     the focus trap, Escape-to-close, and focus restored to the trigger, none of
+     which would be free hand-rolled.
+  {% endcomment %}
+  <dialog id="message-dialog"
+          class="w-[min(32rem,calc(100vw-2rem))] rounded-xl p-0 backdrop:bg-zinc-900/40 shadow-xl">
+    <div class="p-6">
+      <h3 class="text-sm font-semibold text-zinc-900" data-message-title>Message</h3>
+      {# whitespace-pre-line keeps the guest's own line breaks; textContent keeps their markup inert. #}
+      <p class="mt-3 text-sm text-zinc-700 leading-relaxed whitespace-pre-line max-h-[60vh] overflow-y-auto"
+         data-message-body></p>
+      <div class="mt-6 text-right">
+        <button type="button" data-message-close
+                class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 focus-ring">
+          Close
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      var dialog = document.getElementById("message-dialog");
+      if (!dialog || typeof dialog.showModal !== "function") return;
+      var title = dialog.querySelector("[data-message-title]");
+      var body = dialog.querySelector("[data-message-body]");
+
+      document.addEventListener("click", function (event) {
+        var trigger = event.target.closest("[data-message-open]");
+        if (trigger) {
+          title.textContent = "Message from " + trigger.dataset.messageFrom;
+          body.textContent = trigger.dataset.messageBody;
+          dialog.showModal();
+          return;
+        }
+        /* Clicking the backdrop resolves to the dialog itself — the inner div
+           covers every pixel of the dialog's own box. */
+        if (event.target === dialog || event.target.closest("[data-message-close]")) {
+          dialog.close();
+        }
+      });
+    })();
+  </script>
 {% endblock %}

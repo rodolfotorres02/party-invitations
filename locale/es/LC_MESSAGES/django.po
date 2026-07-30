@@ -56,6 +56,9 @@ msgid_plural "This invitation covers up to %(counter)s seats."
 msgstr[0] "Esta invitación cubre %(counter)s lugar."
 msgstr[1] "Esta invitación cubre hasta %(counter)s lugares."
 
+msgid "Choose fewer if someone can't make it."
+msgstr "Elige menos si alguien no puede acompañarte."
+
 msgid "Your message · sent"
 msgstr "Tu mensaje · enviado"
 
