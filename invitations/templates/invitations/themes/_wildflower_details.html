@@ -5,7 +5,7 @@ then the ceremony and reception details.
 Included TWICE by wildflower_wreath.html, once inside the wreath frame and once
 below it, with `xl:hidden` / `hidden xl:block` picking exactly one. The printed
 page sets all of this inside the oval, and from 1280px up it still fits there.
-Narrower it does not: the wreath's clear interior is ~65% of its width, so copy
+Narrower it does not: the wreath's clear interior is ~63% of its width, so copy
 that fits inside it is either unreadably narrow or forces the artwork so far
 past the viewport that both floral flanks clip off-screen entirely and the oval
 stops reading as an oval. Below `xl` the oval therefore frames the names lockup
@@ -46,7 +46,7 @@ would turn a lockup into a list.
   {% if content.ceremony_address %}
     <a href="https://www.google.com/maps/search/?api=1&query={{ content.ceremony_address|urlencode }}"
        target="_blank" rel="noopener"
-       class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors duration-300">
+       class="mt-5 inline-flex min-h-[44px] items-center justify-center px-10 py-3 bg-primary text-on-primary uppercase tracking-widest text-xs hover:opacity-90 transition duration-300 rounded">
       {% trans "View Map" %}
     </a>
   {% endif %}
@@ -63,7 +63,7 @@ would turn a lockup into a list.
     {% if content.reception_address %}
       <a href="https://www.google.com/maps/search/?api=1&query={{ content.reception_address|urlencode }}"
          target="_blank" rel="noopener"
-         class="mt-5 inline-flex min-h-[44px] items-center border border-primary/60 text-primary px-7 rounded-full text-[0.62rem] uppercase tracking-[0.28em] hover:bg-primary hover:text-on-primary transition-colors duration-300">
+         class="mt-5 inline-flex min-h-[44px] items-center justify-center px-10 py-3 bg-primary text-on-primary uppercase tracking-widest text-xs hover:opacity-90 transition duration-300 rounded">
         {% trans "View Map" %}
       </a>
     {% endif %}
