@@ -205,38 +205,49 @@ question to carry it.
       </div>
     {% endif %}
 
-    {% if rsvp and rsvp.message %}
-      {# Message already sent — show it as a read-only "sent" block. #}
-      <div class="mt-10">
-        <p class="text-xs uppercase tracking-widest text-on-surface-variant mb-3">
-          {% trans "Your message · sent" %}
-        </p>
-        <div class="px-4 py-3 bg-primary/10 border border-primary/20 rounded-md text-sm leading-relaxed">
-          {{ rsvp.message|linebreaksbr }}
-        </div>
-        <p class="text-xs text-on-surface-variant mt-3">
-          {% blocktrans with sent_at=rsvp.responded_at|date:"DATETIME_FORMAT" %}Sent {{ sent_at }} · this message can't be edited.{% endblocktrans %}
-        </p>
-      </div>
-    {% else %}
-      <div class="mt-10">
-        <label for="{{ form.message.id_for_label }}" class="block text-xs uppercase tracking-widest mb-3 text-on-surface-variant">
-          {% trans "Message for the host (optional)" %}
-        </label>
-        {% comment %} The same hairline rectangle as the seat chips, so every box a guest can
-           act on in this card is drawn the same way. A bottom rule alone — which
-           is what the class list used to ask for — left the field with no visible
-           top or sides and read as blank card, not as somewhere to type.
+    {% comment %}
+    One editable box, on a first visit and on a revisit alike. This used to
+    lock itself the moment a message was sent — "this message can't be edited"
+    — so a guest who made a typo, or whose news changed, had no way to fix it
+    short of asking the host. Nothing is lost by opening it: every version is
+    kept server-side (RSVPMessage), so the host still sees what was originally
+    said as well as what it became.
 
-           The focus ring is kept on top of the colour change, so keyboard focus is
-           visible rather than merely different.
+    Pre-filled with the current message rather than starting empty. That makes
+    a correction an edit instead of a retype, and it gives "clear the box and
+    send" an unambiguous meaning — withdraw the note — which an always-empty
+    box could not express.
+    {% endcomment %}
+    <div class="mt-10">
+      <label for="{{ form.message.id_for_label }}" class="block text-xs uppercase tracking-widest mb-3 text-on-surface-variant">
+        {% if rsvp and rsvp.message %}
+          {% trans "Your message for the host" %}
+        {% else %}
+          {% trans "Message for the host (optional)" %}
+        {% endif %}
+      </label>
+      {% comment %} The same hairline rectangle as the seat chips, so every box a guest can
+         act on in this card is drawn the same way. A bottom rule alone — which
+         is what the class list used to ask for — left the field with no visible
+         top or sides and read as blank card, not as somewhere to type.
+
+         The focus ring is kept on top of the colour change, so keyboard focus is
+         visible rather than merely different.
+      {% endcomment %}
+      <textarea name="{{ form.message.html_name }}" id="{{ form.message.id_for_label }}"
+                rows="3"
+                class="w-full rounded border border-outline-variant bg-transparent px-3 py-2.5 text-sm leading-relaxed focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">{{ form.message.value|default:"" }}</textarea>
+      {{ form.message.errors }}
+      {% if rsvp and rsvp.message %}
+        {% comment %} Says both halves on purpose: that the note did arrive, and that it is
+           still open. Without the first the guest has no receipt; without the
+           second a pre-filled box reads as something already settled.
         {% endcomment %}
-        <textarea name="{{ form.message.html_name }}" id="{{ form.message.id_for_label }}"
-                  rows="3"
-                  class="w-full rounded border border-outline-variant bg-transparent px-3 py-2.5 text-sm leading-relaxed focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50">{{ form.message.value|default:"" }}</textarea>
-        {{ form.message.errors }}
-      </div>
-    {% endif %}
+        <p class="text-xs text-on-surface-variant mt-3">
+          {% blocktrans with sent_at=rsvp.message_sent_at|date:"DATETIME_FORMAT" %}Sent {{ sent_at }} · edit it and send again to update.{% endblocktrans %}
+        </p>
+      {% endif %}
+    </div>
 
     <div class="mt-10 text-center">
       <button type="submit"

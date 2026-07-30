@@ -24,7 +24,7 @@ class RSVPService:
         *,
         status: str,
         seats: Optional[int] = None,
-        message: str = "",
+        message: Optional[str] = None,
     ) -> RSVP:
         """Record (or update) a guest's response to an invitation by token.
 
@@ -36,8 +36,20 @@ class RSVPService:
         caller that skips the form cannot write a headcount the organizer never
         offered. Omitting it means the full allocation.
 
-        A non-empty `message` is written; an empty `message` is treated as
-        "no change" so updating status later doesn't clobber an existing note.
+        `message` distinguishes absent from empty, which the RSVP form relies
+        on to let a guest rewrite a note they have already sent:
+
+        - ``None`` (omitted) leaves the stored message untouched. This is what
+          protects a caller that only means to change the status — the form
+          always sends the field, but nothing else has to.
+        - ``""`` clears it. The form renders the textarea pre-filled with the
+          current message, so an empty box coming back is a guest deleting
+          their note on purpose, not an update that forgot to include it.
+        - Any other value replaces it, and is appended to the RSVP's message
+          history unless it is what the message already said.
+
+        Clearing appends nothing: the history is the messages a guest sent, and
+        an erasure is not one. The trail of what they did say survives it.
         """
         if status not in RSVP.Status.values:
             raise ValueError(f"Invalid RSVP status: {status!r}.")
@@ -47,6 +59,23 @@ class RSVPService:
             "status": status,
             "seats": allocation if seats is None else max(1, min(seats, allocation)),
         }
-        if message:
+        if message is not None:
             fields["message"] = message
-        return self._rsvps.upsert_for_invitation(invitation, **fields)
+        rsvp = self._rsvps.upsert_for_invitation(invitation, **fields)
+        if message:
+            self._record_message_version(rsvp, message)
+        return rsvp
+
+    def _record_message_version(self, rsvp: RSVP, message: str) -> None:
+        """Append `message` to the RSVP's history unless it is already current.
+
+        Every submission posts the message back, because the textarea is
+        pre-filled with it — so most updates carry a message the host has
+        already seen. Recording those would bury the versions that actually
+        changed under a pile of identical rows, one per time the guest amended
+        their headcount.
+        """
+        latest = self._rsvps.latest_message(rsvp)
+        if latest is not None and latest.body == message:
+            return
+        self._rsvps.add_message(rsvp, message)

@@ -230,6 +230,10 @@ class RSVP(TimestampedModel):
         blank=True,
         help_text="Seats the guest confirmed, up to the invitation's num_guests.",
     )
+    # The message as it stands right now. Every version it has ever had —
+    # including this one — is kept in `message_history`; this field is the
+    # denormalized "current", which is what the guest sees and what the host
+    # reads first.
     message = models.TextField(blank=True)
     responded_at = models.DateTimeField(auto_now=True)
 
@@ -253,3 +257,59 @@ class RSVP(TimestampedModel):
         if self.seats is None:
             return self.invitation.num_guests
         return self.seats
+
+    @property
+    def message_sent_at(self) -> Any:
+        """When the current message was written.
+
+        Deliberately not `responded_at`: that field is `auto_now`, so it moves
+        every time any part of the RSVP is saved. A guest who flips maybe→yes
+        without touching their note would otherwise be told the note was sent
+        just now. Falls back to `responded_at` only for a message with no
+        history row — a value written outside the service, e.g. in the admin.
+        """
+        latest = self.message_history.last()
+        return latest.created_at if latest else self.responded_at
+
+    @property
+    def previous_messages(self) -> list["RSVPMessage"]:
+        """Superseded versions of the message, newest first.
+
+        The current message is displayed on its own, so the row holding it is
+        dropped rather than repeated at the top of the trail. Matching on the
+        body rather than assuming "the last row is the current one" keeps this
+        honest when `message` was edited directly in the admin, which appends
+        no history: there the newest row is genuinely superseded and belongs
+        in the trail.
+        """
+        history = list(self.message_history.all())
+        if history and history[-1].body == self.message:
+            history = history[:-1]
+        return list(reversed(history))
+
+
+class RSVPMessage(TimestampedModel):
+    """One version of the note a guest sent along with their RSVP.
+
+    Guests may rewrite their message as often as they like, and only ever see
+    the current one. This table is what makes that safe for the host: every
+    version ever sent is kept, so a note the host already read cannot be
+    quietly replaced.
+
+    Rows are append-only — an edit adds a version, it never rewrites one.
+    """
+
+    rsvp = models.ForeignKey(
+        RSVP, on_delete=models.CASCADE, related_name="message_history"
+    )
+    body = models.TextField()
+
+    class Meta:
+        # `created_at` alone is not a total order — two versions written in the
+        # same instant would sort arbitrarily — and "the current version" is
+        # defined here as the last row. `id` breaks ties in insertion order so
+        # that definition always resolves to one row.
+        ordering = ["created_at", "id"]
+
+    def __str__(self) -> str:
+        return f"Message from {self.rsvp.invitation.label} at {self.created_at}"

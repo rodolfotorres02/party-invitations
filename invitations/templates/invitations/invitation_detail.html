@@ -117,10 +117,41 @@
             <div class="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
               <p class="text-xs uppercase tracking-wider text-zinc-500 mb-1.5">Message from {{ invitation.label }}</p>
               <p class="text-sm text-zinc-800 leading-relaxed whitespace-pre-line">{{ rsvp.message }}</p>
+              <p class="text-xs text-zinc-500 mt-2">Sent {{ rsvp.message_sent_at|date:"M j, Y · g:i A" }}</p>
             </div>
           {% else %}
             <p class="text-xs text-zinc-500 italic">No message included.</p>
           {% endif %}
+
+          {% comment %} Guests can rewrite their message, so the note above is only the latest
+             thing they said. Everything it replaced is kept and shown here — a
+             host who already read and acted on an earlier version needs to see
+             what changed, not just what it now says.
+
+             Collapsed by default: on the overwhelming majority of invitations
+             there is nothing here at all, and where there is, the current
+             message is still the one that matters.
+
+             Bound with `with` because the property runs a query: reading it
+             separately for the check, the count and the loop would run three.
+          {% endcomment %}
+          {% with versions=rsvp.previous_messages %}
+            {% if versions %}
+              <details class="mt-3">
+                <summary class="cursor-pointer text-xs text-zinc-500 hover:text-zinc-700 select-none">
+                  {{ versions|length }} earlier version{{ versions|pluralize }}
+                </summary>
+                <ol class="mt-2 space-y-2">
+                  {% for version in versions %}
+                    <li class="rounded-lg border border-dashed border-zinc-200 px-4 py-3">
+                      <p class="text-xs text-zinc-400 mb-1.5">{{ version.created_at|date:"M j, Y · g:i A" }}</p>
+                      <p class="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{{ version.body }}</p>
+                    </li>
+                  {% endfor %}
+                </ol>
+              </details>
+            {% endif %}
+          {% endwith %}
 
           <p class="text-xs text-zinc-500 mt-4">
             Responded {{ rsvp.responded_at|date:"M j, Y · g:i A" }}
