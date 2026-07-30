@@ -1,4 +1,4 @@
-{% comment %}
+{% load static %}{% comment %}
 Shared <head> setup for every theme template.
 
 The four user-driven slots (primary, secondary, surface, text) are always
@@ -11,8 +11,21 @@ intended depth and accents.
 
 The "garden" family also swaps the typeface pair: it is a translation of a
 printed, engraved invitation, so it loads Cinzel (all-caps Roman serif) for
-every block of copy and Pinyon Script for the calligraphic display lines,
-instead of the DM Sans / Playfair Display pair every other family uses.
+every block of copy and La Graziela Demo — the print's own calligraphic face,
+self-hosted — for the display lines, instead of the DM Sans / Playfair Display
+pair every other family uses.
+
+Pinyon Script is still requested for that family, and it is NOT dead weight:
+La Graziela Demo is a 103-glyph demo cut with no accented Latin at all — no
+á é í ó ú ñ, no ¿ ¡ — and these invitations are largely Spanish, where the
+script face is set with guest and couple NAMES. Left to itself the browser
+would fill each missing accent from the generic `cursive` fallback, so
+"Pérez" would render with four calligraphic letters and one system-serif é.
+Naming Pinyon Script next in the stack keeps those characters in a
+calligraphic face instead. Per-character fallback is exactly what a font
+stack is for; the mixed run is only visible on words that would otherwise be
+broken. If the licensed full cut of La Graziela is ever dropped in, this
+fallback simply stops being reached.
 
 `theme.family` is passed in by the view; defaults to "ethereal".
 {% endcomment %}
@@ -35,11 +48,25 @@ and it is a large download for a page a guest opens once on a phone.{% endcommen
     --pal-surface: {{ palette.surface_color }};
     --pal-text: {{ palette.text_color }};
   }
-  {% if theme.family == "garden" %}/* Cinzel is mapped to .font-display too, so the shared _rsvp_form.html
+  {% if theme.family == "garden" %}/* Self-hosted, so it is declared here rather than requested from Google.
+     `swap` matches the display=swap on the Google link above: the names are
+     the first thing painted on the cover, and a block would leave that screen
+     empty. unicode-range is deliberately NOT set — the font's own cmap already
+     limits it, and pinning a range here would stop the browser falling back
+     per character for the accents this cut is missing. */
+  @font-face {
+    font-family: 'La Graziela Demo';
+    src: url("{% static 'invitations/wildflower/la-graziela-demo.woff2' %}") format("woff2"),
+         url("{% static 'invitations/wildflower/la-graziela-demo.otf' %}") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  /* Cinzel is mapped to .font-display too, so the shared _rsvp_form.html
      partial picks up the engraved look without knowing this family exists. */
   body { font-family: 'Cinzel', serif; }
   .font-display { font-family: 'Cinzel', serif; }
-  .font-script { font-family: 'Pinyon Script', cursive; }{% else %}body { font-family: 'DM Sans', sans-serif; }
+  .font-script { font-family: 'La Graziela Demo', 'Pinyon Script', cursive; }{% else %}body { font-family: 'DM Sans', sans-serif; }
   .font-display { font-family: 'Playfair Display', serif; }{% endif %}
 </style>
 <script>
@@ -50,7 +77,7 @@ and it is a large download for a page a guest opens once on a phone.{% endcommen
         fontFamily: {
           {% if theme.family == "garden" %}display: ["Cinzel", "serif"],
           body: ["Cinzel", "serif"],
-          script: ["Pinyon Script", "cursive"],{% else %}display: ["Playfair Display", "serif"],
+          script: ["La Graziela Demo", "Pinyon Script", "cursive"],{% else %}display: ["Playfair Display", "serif"],
           body: ["DM Sans", "sans-serif"],{% endif %}
         },
         colors: {

@@ -371,8 +371,39 @@ class RSVPForm(forms.Form):
         label="Will you attend?",
         widget=forms.RadioSelect,
     )
+    # Choices are per-invitation, so they are built in __init__ rather than
+    # declared here. Leaving the ceiling to the widget alone would not bind it:
+    # a <select> is only a suggestion to whoever is posting. ChoiceField
+    # re-checks the submitted value against the same generated list, so an
+    # invitation for 2 cannot be answered with 5 by editing the form.
+    seats = forms.ChoiceField(
+        label="How many seats will you use?",
+        required=False,
+    )
     message = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3}),
         required=False,
         label="Message for the host",
     )
+
+    def __init__(self, *args: Any, num_guests: int = 1, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        # At least one seat even if an invitation somehow carries 0, so the
+        # field never renders an empty select.
+        self.num_guests = max(1, num_guests)
+        self.fields["seats"].choices = [
+            (str(n), str(n)) for n in range(1, self.num_guests + 1)
+        ]
+        # Everyone invited is coming, unless the guest says otherwise — the
+        # common answer costs no interaction.
+        self.fields["seats"].initial = str(self.num_guests)
+
+    def clean_seats(self) -> int:
+        """Normalize to an int, defaulting to the full allocation.
+
+        The field is `required=False` so that a single-seat invitation — where
+        the template renders no dropdown at all — still validates. An absent
+        or blank value means "all of them".
+        """
+        value = self.cleaned_data.get("seats")
+        return int(value) if value else self.num_guests

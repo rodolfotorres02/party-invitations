@@ -520,15 +520,19 @@
     {% comment %}
     Fitting the copy inside the wreath.
 
-    Measured on the bundled artwork (612x792): the clear centred interior is
-    ~65% of its width by ~63% of its height.
+    Measured on the bundled artwork (576x764, cropped to the painted edge): the
+    clear centred interior is ~63% of its width by ~59% of its height. The
+    artwork is exported from the print file with a transparent page margin
+    around it; that margin is trimmed off before it ships, because the frame
+    below is sized to the wreath itself and padding baked into the file would
+    both shrink the oval and shift it off-centre.
 
-    Wide screens: the frame is locked to the artwork's own 612/792 aspect so the
-    wreath fills it exactly. At the 1100px cap that leaves ~710px of clear
+    Wide screens: the frame is locked to the artwork's own 576/764 aspect so the
+    wreath fills it exactly. At the 1100px cap that leaves ~690px of clear
     width around the 480px measure, and the whole page-2 copy sits inside the
     oval exactly as it does in print.
 
-    Narrow screens: it cannot. 65% of a 390px viewport is 254px, and the full
+    Narrow screens: it cannot. 63% of a 390px viewport is 246px, and the full
     copy set that narrow runs ~950px tall against an interior only ~600px tall.
     An earlier approach — scaling the artwork to 215% and letting the section
     clip it — put BOTH floral flanks fully off-screen (their inner edges landed
@@ -541,9 +545,9 @@
 
     The crossover is `xl`, NOT `md`. Work it from the interior: the copy is
     480px wide and ~795px tall, so an interior big enough for it needs the
-    artwork to be at least 480/0.65 = 738px wide and 795/0.63 = 1262px tall —
-    and since the frame holds 612/792, height is the binding constraint, so the
-    frame has to be ~1128px wide before the copy clears the florals. Switching
+    artwork to be at least 480/0.63 = 762px wide and 795/0.59 = 1347px tall —
+    and since the frame holds 576/764, height is the binding constraint, so the
+    frame has to be ~1016px wide before the copy clears the florals. Switching
     at `md` (768px) put the top of that copy 87% under painted flowers on every
     tablet and small laptop, and covered the second View Map button almost
     entirely.
@@ -554,7 +558,7 @@
     keeps its own max-width regardless.
     {% endcomment %}
     <div class="relative mx-auto flex w-full max-w-[440px] items-center justify-center
-                aspect-[612/792] md:max-w-[560px] xl:max-w-[1100px]">
+                aspect-[576/764] md:max-w-[560px] xl:max-w-[1100px]">
         {% comment %} The frame blooms in first and the names follow it — the artwork is
            painted, so it settles out of a slight overscale rather than
            travelling. The overscale is clipped by the section, not laid out, so

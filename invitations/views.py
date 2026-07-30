@@ -336,11 +336,17 @@ class InvitationPublicView(View):
         party = invitation.party
         theme = get_theme(party.template_choice)
         existing_rsvp = getattr(invitation, "rsvp", None)
-        initial = (
-            {"status": existing_rsvp.status, "message": existing_rsvp.message}
-            if existing_rsvp is not None
-            else None
-        )
+        # `seats` is left out when the stored value is NULL — an RSVP answered
+        # before the question existed — so the field falls back to its own
+        # initial (the full allocation) rather than rendering an empty select.
+        initial = None
+        if existing_rsvp is not None:
+            initial = {
+                "status": existing_rsvp.status,
+                "message": existing_rsvp.message,
+            }
+            if existing_rsvp.seats is not None:
+                initial["seats"] = str(existing_rsvp.seats)
         # Fall back to the host's default palette if the party has none assigned.
         palette = party.palette or PaletteService().default_for_host(party.host)
         # Render chrome strings + dates in the invitation's chosen language.
@@ -355,19 +361,25 @@ class InvitationPublicView(View):
                     "palette": palette,
                     "theme": theme,
                     "rsvp": existing_rsvp,
-                    "form": RSVPForm(initial=initial),
+                    "form": RSVPForm(
+                        initial=initial, num_guests=invitation.num_guests
+                    ),
                 },
             )
 
 
 class RSVPSubmitView(View):
     def post(self, request: HttpRequest, token: UUID) -> HttpResponse:
-        form = RSVPForm(request.POST)
         invitation_service = InvitationService()
         try:
             invitation = invitation_service.get_by_token(token)
         except InvitationNotFoundError as exc:
             raise Http404(str(exc)) from exc
+
+        # Built after the lookup, not before: the seat choices are bounded by
+        # this invitation's allocation, so the form cannot be validated until
+        # we know which invitation is being answered.
+        form = RSVPForm(request.POST, num_guests=invitation.num_guests)
 
         if not form.is_valid():
             party = invitation.party

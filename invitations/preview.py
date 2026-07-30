@@ -220,7 +220,9 @@ class TemplatePreviewView(LoginRequiredMixin, View):
                 "palette": palette,
                 "theme": theme,
                 "rsvp": None,
-                "form": RSVPForm(),
+                # num_guests, or the seat dropdown previews with a single
+                # option while the line under it offers the dummy's two.
+                "form": RSVPForm(num_guests=invitation.num_guests),
                 "is_preview": True,
             },
         )
