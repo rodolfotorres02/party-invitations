@@ -1,7 +1,10 @@
 """Admin registrations."""
-from django.contrib import admin
+from typing import Optional
 
-from invitations.models import Invitation, Palette, Party, RSVP
+from django.contrib import admin
+from django.http import HttpRequest
+
+from invitations.models import Invitation, Palette, Party, RSVP, RSVPMessage
 
 
 @admin.register(Palette)
@@ -39,6 +42,28 @@ class InvitationAdmin(admin.ModelAdmin):
     readonly_fields = ("token",)
 
 
+class RSVPMessageInline(admin.TabularInline):
+    """The message trail, read-only.
+
+    A guest can rewrite their message freely; this is the record of what they
+    wrote before. An audit trail that can be edited in place is not one, so
+    nothing here is writable — the current message stays editable on the RSVP
+    itself, which is the field the guest is actually changing.
+    """
+
+    model = RSVPMessage
+    extra = 0
+    fields = ("body", "created_at")
+    readonly_fields = ("body", "created_at")
+    can_delete = False
+    verbose_name_plural = "Message history"
+
+    def has_add_permission(
+        self, request: HttpRequest, obj: Optional[RSVP] = None
+    ) -> bool:
+        return False
+
+
 @admin.register(RSVP)
 class RSVPAdmin(admin.ModelAdmin):
     list_display = (
@@ -50,7 +75,10 @@ class RSVPAdmin(admin.ModelAdmin):
         "responded_at",
     )
     list_filter = ("status",)
-    search_fields = ("invitation__label", "message")
+    # Searching the trail too, not just the current text: a host looking for
+    # "allergy" should still find the RSVP whose note said it last week.
+    search_fields = ("invitation__label", "message", "message_history__body")
+    inlines = (RSVPMessageInline,)
     # `seats_confirmed` and `seats_offered` both read through to the
     # invitation, so without this the changelist runs a query per row.
     list_select_related = ("invitation",)

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: party-invitations\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-26 18:07+0000\n"
+"POT-Creation-Date: 2026-07-30 23:20+0000\n"
 "PO-Revision-Date: 2026-05-26\n"
 "Language-Team: es\n"
 "Language: es\n"
@@ -34,6 +34,12 @@ msgstr[1] "Esta invitación es para <strong>%(counter)s invitados</strong>."
 msgid "Kindly reply by %(deadline)s"
 msgstr "Responde antes del %(deadline)s, por favor"
 
+msgid "Note"
+msgstr "Nota"
+
+msgid "The reception will be an adults-only space"
+msgstr "La recepción será un espacio solo para adultos"
+
 #, python-format
 msgid "Current response: <strong>%(status)s</strong> · update below."
 msgstr "Respuesta actual: <strong>%(status)s</strong> · actualízala abajo."
@@ -41,14 +47,11 @@ msgstr "Respuesta actual: <strong>%(status)s</strong> · actualízala abajo."
 msgid "Will you attend?"
 msgstr "¿Asistirás?"
 
-msgid "Note"
-msgstr "Nota"
-
-msgid "The reception will be an adults-only space"
-msgstr "La recepción será un espacio solo para adultos"
-
 msgid "How many seats will you use?"
 msgstr "¿Cuántos lugares usarás?"
+
+msgid "Choose fewer if someone can't make it."
+msgstr "Elige menos si alguien no puede acompañarte."
 
 #, python-format
 msgid "This invitation covers %(counter)s seat."
@@ -56,24 +59,27 @@ msgid_plural "This invitation covers up to %(counter)s seats."
 msgstr[0] "Esta invitación cubre %(counter)s lugar."
 msgstr[1] "Esta invitación cubre hasta %(counter)s lugares."
 
-msgid "Choose fewer if someone can't make it."
-msgstr "Elige menos si alguien no puede acompañarte."
-
-msgid "Your message · sent"
-msgstr "Tu mensaje · enviado"
-
-#, python-format
-msgid "Sent %(sent_at)s · this message can't be edited."
-msgstr "Enviado el %(sent_at)s · este mensaje no se puede editar."
+msgid "Your message for the host"
+msgstr "Tu mensaje para el anfitrión"
 
 msgid "Message for the host (optional)"
 msgstr "Mensaje para el anfitrión (opcional)"
+
+#, python-format
+msgid "Sent %(sent_at)s · edit it and send again to update."
+msgstr "Enviado el %(sent_at)s · edítalo y vuelve a enviarlo para actualizarlo."
 
 msgid "Update RSVP"
 msgstr "Actualizar respuesta"
 
 msgid "Send RSVP"
 msgstr "Enviar respuesta"
+
+msgid "View Map"
+msgstr "Ver Mapa"
+
+msgid "Reception"
+msgstr "Recepción"
 
 msgid "Our Story"
 msgstr "Nuestra Historia"
@@ -84,12 +90,6 @@ msgstr "Cuándo y Dónde"
 msgid "RSVP"
 msgstr "Confirmación"
 
-# The Wildflower Wreath nav row keeps the English terms; the other themes
-# use the translated forms above.
-msgctxt "wildflower nav"
-msgid "RSVP"
-msgstr "RSVP"
-
 msgid "Schedule"
 msgstr "Programa"
 
@@ -98,9 +98,6 @@ msgstr "Ceremonia"
 
 msgid "The Ceremony"
 msgstr "La Ceremonia"
-
-msgid "Reception"
-msgstr "Recepción"
 
 msgid "The Reception"
 msgstr "La Recepción"
@@ -138,6 +135,9 @@ msgstr "El Jardín Amurallado"
 msgid "The Estate"
 msgstr "La Hacienda"
 
+msgid "Dress code"
+msgstr "Código de Vestimenta"
+
 msgid "Will You Join Us?"
 msgstr "¿Nos acompañarás?"
 
@@ -162,15 +162,8 @@ msgstr "Confirma antes del"
 msgid "Q&A"
 msgstr "Preguntas"
 
-msgctxt "wildflower nav"
-msgid "Q&A"
-msgstr "Q&A"
-
 msgid "Celebration"
 msgstr "Celebración"
-
-msgid "View Map"
-msgstr "Ver Mapa"
 
 msgid "Confirm Your Attendance"
 msgstr "Confirma tu Asistencia"
@@ -178,11 +171,27 @@ msgstr "Confirma tu Asistencia"
 msgid "Frequently Asked Questions"
 msgstr "Preguntas Frecuentes"
 
+msgid "Invitation sections"
+msgstr "Secciones de la invitación"
+
 msgid "Invitation"
 msgstr "Invitación"
 
 msgid "Dress Code"
 msgstr "Código de Vestimenta"
+
+# The Wildflower Wreath nav row keeps the English terms; the other themes
+# use the translated forms above.
+msgctxt "wildflower nav"
+msgid "RSVP"
+msgstr "RSVP"
+
+msgctxt "wildflower nav"
+msgid "Q&A"
+msgstr "Q&A"
+
+msgid "For you"
+msgstr "Para ti"
 
 msgid "For the ladies"
 msgstr "Para las damas"
@@ -196,14 +205,15 @@ msgstr "Nota Importante"
 msgid "A few ideas for inspiration"
 msgstr "Algunas ideas de inspiración"
 
+#, python-format
+msgid "Dress code inspiration %(n)s"
+msgstr "Inspiración de código de vestimenta %(n)s"
+
 msgid "Gifts"
 msgstr "Regalos"
-
-msgid "Questions"
-msgstr "Dudas"
 
 msgid "With love"
 msgstr "Con cariño"
 
-msgid "For you"
-msgstr "Para ti"
+#~ msgid "Questions"
+#~ msgstr "Dudas"

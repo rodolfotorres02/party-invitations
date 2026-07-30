@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from invitations.models import RSVP, Invitation
+from invitations.models import RSVP, Invitation, RSVPMessage
 
 
 class RSVPRepository:
@@ -15,3 +15,11 @@ class RSVPRepository:
             invitation=invitation, defaults=fields
         )
         return rsvp
+
+    def latest_message(self, rsvp: RSVP) -> Optional[RSVPMessage]:
+        """The most recently written version of this RSVP's message."""
+        return rsvp.message_history.last()
+
+    def add_message(self, rsvp: RSVP, body: str) -> RSVPMessage:
+        """Append a version to the RSVP's message history."""
+        return RSVPMessage.objects.create(rsvp=rsvp, body=body)
