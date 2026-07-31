@@ -34,12 +34,6 @@ msgstr[1] "Esta invitación es para <strong>%(counter)s invitados</strong>."
 msgid "Kindly reply by %(deadline)s"
 msgstr "Responde antes del %(deadline)s, por favor"
 
-msgid "Note"
-msgstr "Nota"
-
-msgid "The reception will be an adults-only space"
-msgstr "La recepción será un espacio solo para adultos"
-
 #, python-format
 msgid "Current response: <strong>%(status)s</strong> · update below."
 msgstr "Respuesta actual: <strong>%(status)s</strong> · actualízala abajo."

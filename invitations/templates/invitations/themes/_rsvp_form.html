@@ -9,8 +9,8 @@ InvitationPublicView / RSVPSubmitView based on `invitation.language`.
 Reading order is context → decision → qualifier → optional → send:
 
   header  everything the guest needs BEFORE answering (who it's for, the
-          host's note, the deadline, the adults-only rule, and — on a
-          revisit — what they already said)
+          host's note, the deadline, and — on a revisit — what they
+          already said)
   form    "Will you attend?" leads on type size, seats supports it, the
           message is last because it is the only optional field.
 
@@ -66,26 +66,21 @@ question to carry it.
 
     {% comment %} One tight cluster of event facts — they are read together, so they sit
        together, with the generous space kept for the boundary with the form.
+
+       Both facts are conditional, so the cluster itself is too: without the
+       guard an invitation with neither would still lay down the mt-6 gap.
     {% endcomment %}
-    <div class="mt-6 space-y-1 text-sm text-on-surface-variant">
-      {% if invitation.num_guests == 1 %}
-        {# Multi-seat invitations state their allocation at the seat question. #}
-        <p>{% blocktrans count counter=invitation.num_guests %}This invitation is for <strong>{{ counter }} guest</strong>.{% plural %}This invitation is for <strong>{{ counter }} guests</strong>.{% endblocktrans %}</p>
-      {% endif %}
-      {% if content.rsvp_deadline %}
-        <p>{% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly reply by {{ deadline }}{% endblocktrans %}</p>
-      {% endif %}
-      {% comment %} Moved out of the "Will you attend?" fieldset. It is a fact about the
-         event, not a constraint on that one question, and sitting between the
-         two questions it split the pair that belongs together. Here it is
-         read before either answer — including by a screen reader, which
-         reaches it on the way into the form.
-      {% endcomment %}
-      <p class="text-xs leading-relaxed">
-        <span class="uppercase tracking-widest">{% trans "Note" %}</span> ·
-        {% trans "The reception will be an adults-only space" %}
-      </p>
-    </div>
+    {% if invitation.num_guests == 1 or content.rsvp_deadline %}
+      <div class="mt-6 space-y-1 text-sm text-on-surface-variant">
+        {% if invitation.num_guests == 1 %}
+          {# Multi-seat invitations state their allocation at the seat question. #}
+          <p>{% blocktrans count counter=invitation.num_guests %}This invitation is for <strong>{{ counter }} guest</strong>.{% plural %}This invitation is for <strong>{{ counter }} guests</strong>.{% endblocktrans %}</p>
+        {% endif %}
+        {% if content.rsvp_deadline %}
+          <p>{% blocktrans with deadline=content.rsvp_deadline|date:"DATE_FORMAT" %}Kindly reply by {{ deadline }}{% endblocktrans %}</p>
+        {% endif %}
+      </div>
+    {% endif %}
 
     {% if rsvp %}
       {% comment %} The submit redirect lands back on #rsvp precisely so the guest sees
