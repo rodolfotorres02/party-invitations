@@ -283,6 +283,73 @@ class InvitationCreateView(LoginRequiredMixin, View):
         )
 
 
+class InvitationUpdateView(LoginRequiredMixin, View):
+    """Edit an existing link's settings — every field the create form offered.
+
+    The token is not among them: it is what the guest already has, so the same
+    URL keeps working and any RSVP against it survives the edit.
+    """
+
+    def _context(self, invitation, form: InvitationForm) -> dict:
+        return {
+            "form": form,
+            "party": invitation.party,
+            "invitation": invitation,
+            "rsvp": getattr(invitation, "rsvp", None),
+        }
+
+    def _get_invitation(self, request: HttpRequest, invitation_id: int):
+        try:
+            return InvitationService().get_for_host(invitation_id, request.user)
+        except InvitationNotFoundError as exc:
+            raise Http404(str(exc)) from exc
+
+    def get(
+        self, request: HttpRequest, party_id: int, invitation_id: int
+    ) -> HttpResponse:
+        invitation = self._get_invitation(request, invitation_id)
+        form = InvitationForm(
+            initial={
+                "label": invitation.label,
+                "num_guests": invitation.num_guests,
+                "language": invitation.language,
+                "message": invitation.message,
+            }
+        )
+        return render(
+            request,
+            "invitations/invitation_form.html",
+            self._context(invitation, form),
+        )
+
+    def post(
+        self, request: HttpRequest, party_id: int, invitation_id: int
+    ) -> HttpResponse:
+        form = InvitationForm(request.POST)
+        # Only re-read the invitation when the form has to be redrawn — the
+        # template needs it for the breadcrumb, the seat warning and the
+        # cancel target. On the happy path `update_link` loads and authorizes
+        # it itself, so fetching here first would just be a second query.
+        if not form.is_valid():
+            invitation = self._get_invitation(request, invitation_id)
+            return render(
+                request,
+                "invitations/invitation_form.html",
+                self._context(invitation, form),
+            )
+
+        try:
+            InvitationService().update_link(
+                invitation_id, request.user, **form.cleaned_data
+            )
+        except InvitationNotFoundError as exc:
+            raise Http404(str(exc)) from exc
+        messages.success(request, "Invitation updated.")
+        return redirect(
+            "invitation_detail", party_id=party_id, invitation_id=invitation_id
+        )
+
+
 class InvitationDetailView(LoginRequiredMixin, View):
     """Host-only detail page: shows the URL, the personal message the host
     sent, and (if present) the guest's RSVP response and message."""

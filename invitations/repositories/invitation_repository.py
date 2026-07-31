@@ -30,5 +30,11 @@ class InvitationRepository:
     def create(self, **fields: Any) -> Invitation:
         return Invitation.objects.create(**fields)
 
+    def update(self, invitation: Invitation, **fields: Any) -> Invitation:
+        for key, value in fields.items():
+            setattr(invitation, key, value)
+        invitation.save(update_fields=list(fields.keys()) + ["updated_at"])
+        return invitation
+
     def delete(self, invitation: Invitation) -> None:
         invitation.delete()
