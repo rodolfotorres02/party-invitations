@@ -1,6 +1,6 @@
 {% extends "invitations/base.html" %}
 
-{% block title %}Create invitation link{% endblock %}
+{% block title %}{% if invitation %}Edit invitation for {{ invitation.label }}{% else %}Create invitation link{% endif %}{% endblock %}
 
 {% block content %}
   <nav class="text-xs text-zinc-500 mb-3">
@@ -8,12 +8,26 @@
     <span class="mx-1.5">/</span>
     <a href="{% url 'party_detail' party.id %}" class="hover:text-zinc-700">{{ party.name }}</a>
     <span class="mx-1.5">/</span>
-    <span class="text-zinc-700">New link</span>
+    {% if invitation %}
+      <a href="{% url 'invitation_detail' party.id invitation.id %}" class="hover:text-zinc-700">{{ invitation.label }}</a>
+      <span class="mx-1.5">/</span>
+      <span class="text-zinc-700">Edit</span>
+    {% else %}
+      <span class="text-zinc-700">New link</span>
+    {% endif %}
   </nav>
 
   <div class="mb-6">
-    <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">New invitation link</h1>
-    <p class="text-zinc-500 text-sm mt-1">A shareable URL just for this recipient.</p>
+    <h1 class="text-2xl font-semibold tracking-tight text-zinc-900">
+      {% if invitation %}Edit invitation link{% else %}New invitation link{% endif %}
+    </h1>
+    <p class="text-zinc-500 text-sm mt-1">
+      {% if invitation %}
+        The URL stays the same, so a link you have already shared keeps working.
+      {% else %}
+        A shareable URL just for this recipient.
+      {% endif %}
+    </p>
   </div>
 
   <div class="max-w-xl">
@@ -40,6 +54,24 @@
             {{ form.language.errors }}
           </p>
         </div>
+        {% comment %} An allocation lowered under a seat count the guest already confirmed
+           takes that confirmation down with it — the host owns the ceiling, and
+           an answer above it would make every headcount over-count. Said here,
+           before the edit, rather than reported after it.
+
+           Only above one seat: a declined invitation confirms 0 and nothing
+           moves, and a single confirmed seat is already the floor the form
+           enforces, so neither has anything to warn about.
+        {% endcomment %}
+        {% if rsvp and rsvp.seats_confirmed > 1 %}
+          <p class="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
+            <span class="material-symbols-outlined text-amber-600" style="font-size:16px;">info</span>
+            <span>
+              {{ invitation.label }} confirmed {{ rsvp.seats_confirmed }} seat{{ rsvp.seats_confirmed|pluralize }}.
+              Setting the guest count below that trims their confirmation to match.
+            </span>
+          </p>
+        {% endif %}
         <p>
           <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
           {{ form.message }}
@@ -47,12 +79,16 @@
         </p>
       </div>
       <div class="flex items-center justify-end gap-2 mt-2">
-        <a href="{% url 'party_detail' party.id %}"
+        <a href="{% if invitation %}{% url 'invitation_detail' party.id invitation.id %}{% else %}{% url 'party_detail' party.id %}{% endif %}"
            class="px-4 py-2 rounded-lg text-zinc-700 hover:bg-zinc-100 text-sm font-medium">Cancel</a>
         <button type="submit"
                 class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition focus-ring">
-          <span class="material-symbols-outlined">link</span>
-          Create Link
+          {% if invitation %}
+            Save changes
+          {% else %}
+            <span class="material-symbols-outlined">link</span>
+            Create Link
+          {% endif %}
         </button>
       </div>
     </form>

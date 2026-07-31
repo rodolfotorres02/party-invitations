@@ -79,6 +79,7 @@ docker run --rm -p 8000:8000 \
 | `/parties/new/` | Create a new party |
 | `/parties/<id>/` | Party detail + invitation-link list |
 | `/parties/<id>/invitations/new/` | Create a new invitation link |
-| `/parties/<id>/invitations/<id>/link/` | Show the shareable URL with a copy button |
+| `/parties/<id>/invitations/<id>/` | Show the shareable URL with a copy button, plus the RSVP |
+| `/parties/<id>/invitations/<id>/edit/` | Edit the link's settings — the token is unchanged |
 | `/i/<token>/` | Public invitation page — recipient sees details and RSVP form |
 | `/admin/` | Django admin |

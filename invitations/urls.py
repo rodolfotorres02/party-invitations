@@ -38,6 +38,11 @@ urlpatterns = [
         name="invitation_detail",
     ),
     path(
+        "parties/<int:party_id>/invitations/<int:invitation_id>/edit/",
+        views.InvitationUpdateView.as_view(),
+        name="invitation_edit",
+    ),
+    path(
         "parties/<int:party_id>/invitations/<int:invitation_id>/revoke/",
         views.InvitationRevokeView.as_view(),
         name="invitation_revoke",

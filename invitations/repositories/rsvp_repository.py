@@ -16,6 +16,19 @@ class RSVPRepository:
         )
         return rsvp
 
+    def update(self, rsvp: RSVP, **fields: Any) -> RSVP:
+        """Write `fields` to an existing RSVP.
+
+        `responded_at` is deliberately left out of `update_fields`: it is
+        `auto_now`, and the callers of this method are host-side edits to the
+        invitation, not the guest answering it again. Leaving it out is what
+        keeps it still: `auto_now` only fires for the fields being saved.
+        """
+        for key, value in fields.items():
+            setattr(rsvp, key, value)
+        rsvp.save(update_fields=list(fields.keys()) + ["updated_at"])
+        return rsvp
+
     def latest_message(self, rsvp: RSVP) -> Optional[RSVPMessage]:
         """The most recently written version of this RSVP's message."""
         return rsvp.message_history.last()
